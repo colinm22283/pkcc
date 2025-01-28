@@ -5,7 +5,7 @@
 #include <scanner/token.h>
 
 #define KEYWORD_STRINGS_COUNT (36)
-#define PUNCTUATION_STRINGS_COUNT (46)
+#define PUNCTUATION_STRINGS_COUNT (47)
 
 typedef struct {
     const char * string;

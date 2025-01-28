@@ -17,5 +17,7 @@ int main(int argc, const char ** argv) {
     scanner_scan(&scanner, file_loader.data);
     file_loader_free(&file_loader);
 
+    if (options.debug_enable) scanner_print_tokens(&scanner);
+
     scanner_free(&scanner);
 }

@@ -414,4 +414,9 @@ punctuation_string_entry_t punctuation_strings[PUNCTUATION_STRINGS_COUNT] = {
         .length = 1,
         .punctuation = SCANNER_PUNCTUATION_TYPE_PERIOD,
     },
+    (punctuation_string_entry_t) {
+        .string = ",",
+        .length = 1,
+        .punctuation = SCANNER_PUNCTUATION_TYPE_COMMA,
+    },
 };

@@ -82,7 +82,7 @@ typedef struct {
         unsigned long long u;
         signed long long s;
         float f;
-        float d;
+        double d;
     };
 } token_data_constant_t;
 
@@ -141,6 +141,7 @@ typedef enum {
     SCANNER_PUNCTUATION_TYPE_ELLIPSIS,
     SCANNER_PUNCTUATION_TYPE_QUESTION_MARK,
     SCANNER_PUNCTUATION_TYPE_PERIOD,
+    SCANNER_PUNCTUATION_TYPE_COMMA,
 } token_data_punctuation_type_t;
 typedef struct {
     token_data_punctuation_type_t type;

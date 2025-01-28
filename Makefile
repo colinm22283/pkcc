@@ -24,11 +24,12 @@ $(BUILD_DIR)/pkcc: $(OBJS)
 clean:
 	rm -rf $(BUILD_DIR)
 
-.PHONY: test
-test: all
+$(BUILD_DIR)/test.c:
 	echo "int main() {" > build/test.c
-	echo "int a = 3;" >> build/test.c
-	echo "return a;" >> build/test.c
+	echo "    int a = 3;" >> build/test.c
+	echo "    return a;" >> build/test.c
 	echo "}" >> build/test.c
 
+.PHONY: test
+test: all $(BUILD_DIR)/test.c
 	cd build && ./pkcc -dd test.c

@@ -33,7 +33,7 @@ static inline bool is_number_char(char c) {
     );
 }
 static inline bool is_number_start_char(char c) {
-    return (c >= '0' && c <= '9');
+    return (c >= '0' && c <= '9') || c == '-';
 }
 static inline bool is_number_postfix_char(char c) {
     return (
@@ -65,8 +65,20 @@ void scanner_scan(scanner_t * scanner, const char * buffer) {
         }
 
         if (is_number_start_char(buffer[position])) { // number
+            debug_printf("Number\n");
+
+            bool negative;
+            if (buffer[position] == '-') {
+                negative = true;
+                position++;
+            }
+            else negative = false;
+
+            bool is_float = false;
             size_t number_length;
-            for (number_length = 0; is_number_char(buffer[position + number_length]); number_length++);
+            for (number_length = 0; is_number_char(buffer[position + number_length]); number_length++) {
+                if (buffer[position + number_length] == '.') is_float = true;
+            }
 
             size_t number_postfix_length;
             for (
@@ -75,7 +87,54 @@ void scanner_scan(scanner_t * scanner, const char * buffer) {
                 number_postfix_length++
             );
 
+            size_t number_start = 0;
 
+            // check for number format
+            int base;
+            if (buffer[position] == '0') {
+                number_start++;
+                switch (buffer[position + 1]) {
+                    case 'x': {
+                        base = 16;
+                        number_start++;
+                    } break;
+                    case 'b': {
+                        base = 2;
+                        number_start++;
+                    } break;
+                    default: {
+                        base = 8;
+                    } break;
+                }
+            }
+            else base = 10;
+
+            token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_KEYWORD);
+            token_data_constant_t * data = token->data;
+
+            token->line = line;
+            token->position = position - line_start;
+
+            // TODO: check for number type
+            char * str_end;
+            if (is_float) {
+                data->type = SCANNER_CONSTANT_TYPE_DOUBLE;
+                data->d = strtod(&buffer[position], &str_end);
+            }
+            else {
+                if (negative) {
+                    data->type = SCANNER_CONSTANT_TYPE_SLL;
+                    data->s = strtoll(&buffer[position], &str_end, base);
+                }
+                else {
+                    data->type = SCANNER_CONSTANT_TYPE_ULL;
+                    data->u = strtoull(&buffer[position], &str_end, base);
+                }
+            }
+
+            position += number_start + number_length + number_postfix_length;
+
+            continue;
         }
         else if (buffer[position] == '"') { // string literal
             debug_printf("String\n");
@@ -138,23 +197,24 @@ void scanner_scan(scanner_t * scanner, const char * buffer) {
 
                 while (is_symbol_char(buffer[position + identifier_size])) identifier_size++;
 
-                char * name = pkcc_alloc(identifier_size + 1);
-                memcpy(name, &buffer[position], identifier_size);
-                name[identifier_size] = '\0';
+                if (identifier_size != 0) {
+                    char * name = pkcc_alloc(identifier_size + 1);
+                    memcpy(name, &buffer[position], identifier_size);
+                    name[identifier_size] = '\0';
 
-                debug_printf("Got identifier '%s' at position %zu\n", name, position);
+                    debug_printf("Got identifier '%s' at position %zu\n", name, position);
 
-                token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_KEYWORD);
-                token_data_identifier_t * data = token->data;
+                    token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_KEYWORD);
+                    token_data_identifier_t * data = token->data;
 
-                token->line = line;
-                token->position = position - line_start;
+                    token->line = line;
+                    token->position = position - line_start;
+                    data->name = name;
 
-                data->name = name;
+                    position += identifier_size;
 
-                position += identifier_size;
-
-                continue;
+                    continue;
+                }
             }
         }
 
@@ -169,4 +229,8 @@ void scanner_scan(scanner_t * scanner, const char * buffer) {
             position - line_start + 1
         );
     }
+}
+
+void scanner_print_tokens(scanner_t * scanner) {
+    
 }
