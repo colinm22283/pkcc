@@ -10,4 +10,4 @@ typedef struct {
 
 extern options_t options;
 
-bool options_parse_cli(int argc, const char ** argv);
+void options_parse_cli(int argc, const char ** argv);
