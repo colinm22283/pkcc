@@ -6,7 +6,7 @@
 #include <scanner/file_loader.h>
 
 void file_loader_init(file_loader_t * fl, const char * path) {
-    debug_printf("Initializing file reader on '%s'\n", path);
+    log_printf("Initializing file reader on '%s'\n", path);
 
     FILE * file = fopen(path, "r");
 
@@ -26,7 +26,7 @@ void file_loader_init(file_loader_t * fl, const char * path) {
 }
 
 void file_loader_free(file_loader_t * fl) {
-    debug_printf("Freeing file reader\n");
+    log_printf("Freeing file reader\n");
 
     pkcc_free(fl->data);
 }

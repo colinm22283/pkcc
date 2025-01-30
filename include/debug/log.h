@@ -10,7 +10,9 @@ static inline void log_printf(const char * restrict fmt, ...) {
         va_list args;
         va_start(args, fmt);
 
+        printf("\033[36;1m");
         vprintf(fmt, args);
+        printf("\033[0m");
 
         va_end(args);
     }
@@ -21,7 +23,9 @@ static inline void debug_printf(const char * restrict fmt, ...) {
         va_list args;
         va_start(args, fmt);
 
+        printf("\033[35m");
         vprintf(fmt, args);
+        printf("\033[0m");
 
         va_end(args);
     }
