@@ -4,12 +4,15 @@
 #include <scanner/file_loader.h>
 
 int main(int argc, const char ** argv) {
-    options_parse_cli(argc, argv);
-
     log_printf("PKCC Compiler\n");
 
+    options_parse_cli(argc, argv);
+
+    if (options.input_path == NULL) fatal_error("No input path specified\n");
+    if (options.output_path == NULL) fatal_error("No output path specified\n");
+
     file_loader_t file_loader;
-    file_loader_init(&file_loader, "test.c");
+    file_loader_init(&file_loader, options.input_path);
 
     scanner_t scanner;
     scanner_init(&scanner);
@@ -17,7 +20,10 @@ int main(int argc, const char ** argv) {
     scanner_scan(&scanner, file_loader.data);
     file_loader_free(&file_loader);
 
-    if (options.debug_enable) scanner_print_tokens(&scanner);
+    if (options.debug_enable) {
+        debug_printf("Printing scanner tokens:\n");
+        scanner_print_tokens(&scanner);
+    }
 
     scanner_free(&scanner);
 }

@@ -8,6 +8,10 @@
 
 options_t options = {
     .log_enable = false,
+    .debug_enable = false,
+
+    .input_path = NULL,
+    .output_path = NULL,
 };
 
 void options_parse_cli(int argc, const char ** argv) {
@@ -38,6 +42,11 @@ void options_parse_cli(int argc, const char ** argv) {
                 printf(USAGE_STRING, argv[0]);
                 exit(0);
             }
+            else if (strcmp(argv[i] + 1, "o") == 0) {
+                i++;
+
+                options.output_path = argv[i];
+            }
             else {
                 fatal_error(
                     "Unknown command line argument '%s'\n"
@@ -46,6 +55,17 @@ void options_parse_cli(int argc, const char ** argv) {
                     argv[0]
                 );
             }
+        }
+        else {
+            if (options.input_path != NULL) {
+                fatal_error(
+                    "Multiple input files were provided (eg. '%s' & '%s')\n",
+                    options.input_path,
+                    argv[i]
+                );
+            }
+
+            options.input_path = argv[i];
         }
     }
 }

@@ -31,7 +31,7 @@ token_t * token_buffer_push(token_buffer_t * tb, token_type_t type) {
     if (tb->token_count == tb->token_capacity) {
         tb->token_capacity *= 2;
 
-        pkcc_realloc(tb->tokens, tb->token_capacity);
+        tb->tokens = pkcc_realloc(tb->tokens, tb->token_capacity);
     }
 
     return token;

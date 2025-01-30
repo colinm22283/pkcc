@@ -25,11 +25,14 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 $(BUILD_DIR)/test.c:
-	echo "int main() {" > build/test.c
-	echo "    int a = 3;" >> build/test.c
-	echo "    return a;" >> build/test.c
-	echo "}" >> build/test.c
+	mkdir -p $(@D)
+
+	echo "int main() {" > $@
+	echo "    int a = 3;" >> $@
+	echo "    static const char * str = \"aaaaa\";" >> $@
+	echo "    return a;" >> $@
+	echo "}" >> $@
 
 .PHONY: test
 test: all $(BUILD_DIR)/test.c
-	cd build && ./pkcc -dd test.c
+	cd build && ./pkcc -dd test.c -o test.s

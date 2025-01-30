@@ -4,7 +4,7 @@
 
 #include <scanner/token.h>
 
-#define TOKEN_BUFFER_DEFAULT_SIZE (32)
+#define TOKEN_BUFFER_DEFAULT_SIZE (1024)
 
 typedef struct {
     size_t token_count, token_capacity;

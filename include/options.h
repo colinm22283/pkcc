@@ -6,6 +6,9 @@
 typedef struct {
     bool log_enable;
     bool debug_enable;
+
+    const char * input_path;
+    const char * output_path;
 } options_t;
 
 extern options_t options;

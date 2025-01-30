@@ -10,7 +10,7 @@ __attribute__((noreturn)) void fatal_error(const char * restrict fmt, ...) {
 
     fprintf(stderr, "\033[31;1mERROR:\n");
     vfprintf(stderr, fmt, args);
-    fprintf(stderr, "\033[0m\n");
+    fprintf(stderr, "\033[0m");
 
     va_end(args);
 

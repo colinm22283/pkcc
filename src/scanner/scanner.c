@@ -1,10 +1,12 @@
 #include <stdbool.h>
 
+#include <alloc.h>
+#include <escape_characters.h>
 #include <debug/log.h>
 #include <debug/error_handler.h>
-#include <alloc.h>
 #include <scanner/scanner.h>
-#include <scanner/token_strings.h>
+#include <scanner/token_translation.h>
+#include <scanner/token_stringify.h>
 
 void scanner_init(scanner_t * scanner) {
     debug_printf("Initializing scanner\n");
@@ -65,7 +67,7 @@ void scanner_scan(scanner_t * scanner, const char * buffer) {
         }
 
         if (is_number_start_char(buffer[position])) { // number
-            debug_printf("Number\n");
+            size_t old_position = position;
 
             bool negative;
             if (buffer[position] == '-') {
@@ -109,26 +111,34 @@ void scanner_scan(scanner_t * scanner, const char * buffer) {
             }
             else base = 10;
 
-            token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_KEYWORD);
+            token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_CONSTANT);
             token_data_constant_t * data = token->data;
 
             token->line = line;
-            token->position = position - line_start;
+            token->position = old_position - line_start;
 
             // TODO: check for number type
             char * str_end;
             if (is_float) {
+                debug_printf("Got number '%ull' at position %zu\n");
+
                 data->type = SCANNER_CONSTANT_TYPE_DOUBLE;
                 data->d = strtod(&buffer[position], &str_end);
+
+                debug_printf("Got number '%f' at position %zu\n", data->d, old_position);
             }
             else {
                 if (negative) {
                     data->type = SCANNER_CONSTANT_TYPE_SLL;
                     data->s = strtoll(&buffer[position], &str_end, base);
+
+                    debug_printf("Got number '%lli' at position %zu\n", data->s, old_position);
                 }
                 else {
                     data->type = SCANNER_CONSTANT_TYPE_ULL;
                     data->u = strtoull(&buffer[position], &str_end, base);
+
+                    debug_printf("Got number '%llu' at position %zu\n", data->u, old_position);
                 }
             }
 
@@ -137,25 +147,132 @@ void scanner_scan(scanner_t * scanner, const char * buffer) {
             continue;
         }
         else if (buffer[position] == '"') { // string literal
-            debug_printf("String\n");
+            size_t string_size;
+            for (
+                string_size = 0;
+                buffer[position + string_size + 1] != '"' ||
+                buffer[position + string_size] == '\\';
+                string_size++
+            );
+
+            token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_STRING_LITERAL);
+            token_data_string_literal_t * data = token->data;
+
+            token->line = line;
+            token->position = position - line_start;
+
+            data->content = pkcc_alloc(string_size + 1);
+            memcpy(data->content, &buffer[position + 1], string_size);
+            data->content[string_size] = '\0';
+
+            debug_printf("Got string '%s' at position %zu\n", data->content, position);
+
+            position += string_size + 2;
+
+            continue;
+        }
+        else if (buffer[position] == '\'') { // character literal
+            if (buffer[position + 1] == '\'') {
+                size_t line_length;
+                for (line_length = 0; buffer[line_start + line_length] != '\n'; line_length++);
+                fatal_error(
+                    "%.*s\n%*c\nEncountered empty character literal at line %zu, character %zu\n",
+                    line_length, &buffer[line_start],
+                    position - line_start + 2, '^',
+                    line + 1,
+                    position - line_start + 2
+                );
+            }
+
+            if (buffer[position + 1] == '\\') {
+                size_t escape_size;
+                char escape_result = parse_escape_char(&buffer[position + 2], &escape_size);
+
+                if (escape_size != 0) {
+                    if (buffer[position + escape_size + 2] != '\'') {
+                        size_t line_length;
+                        for (line_length = 0; buffer[line_start + line_length] != '\n'; line_length++);
+                        fatal_error(
+                            "%.*s\n%*c\nEncountered invalid character literal at line %zu, character %zu\n",
+                            line_length, &buffer[line_start],
+                            position - line_start + 1, '^',
+                            line + 1,
+                            position - line_start + 1
+                        );
+                    }
+
+                    debug_printf("Escaped character\n");
+
+                    token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_CONSTANT);
+                    token_data_constant_t * data = token->data;
+
+                    token->line = line;
+                    token->position = position - line_start;
+
+                    data->type = SCANNER_CONSTANT_TYPE_SC;
+                    data->s = (long long) escape_result;
+
+                    position += 3 + escape_size;
+
+                    continue;
+                }
+                else {
+                    size_t line_length;
+                    for (line_length = 0; buffer[line_start + line_length] != '\n'; line_length++);
+                    fatal_error(
+                        "%.*s\n%*c\nEncountered invalid character literal at line %zu, character %zu\n",
+                        line_length, &buffer[line_start],
+                        position - line_start + 1, '^',
+                        line + 1,
+                        position - line_start + 1
+                    );
+                }
+            }
+
+            if (buffer[position + 2] != '\''){
+                size_t line_length;
+                for (line_length = 0; buffer[line_start + line_length] != '\n'; line_length++);
+                fatal_error(
+                    "%.*s\n%*c\nEncountered invalid character literal at line %zu, character %zu\n",
+                    line_length, &buffer[line_start],
+                    position - line_start + 1, '^',
+                    line + 1,
+                    position - line_start + 1
+                );
+            }
+
+            debug_printf("Standard character\n");
+
+            token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_CONSTANT);
+            token_data_constant_t * data = token->data;
+
+            token->line = line;
+            token->position = position - line_start;
+
+            data->type = SCANNER_CONSTANT_TYPE_SC;
+            data->s = (long long) buffer[position + 1];
+
+            position += 3;
+
+            continue;
         }
         else {
             // punctuation
             {
                 bool punctuation_found = false;
-                for (size_t i = 0; i < PUNCTUATION_STRINGS_COUNT; i++) {
-                    if (strncmp(&buffer[position], punctuation_strings[i].string, punctuation_strings[i].length) == 0) {
-                        debug_printf("Got punctuation '%s' at position %zu\n", punctuation_strings[i].string, position);
+                for (size_t i = 0; i < PUNCTUATION_TRANSLATIONS_COUNT; i++) {
+                    if (strncmp(&buffer[position], punctuation_translations[i].string, punctuation_translations[i].length) == 0) {
+                        debug_printf("Got punctuation '%s' at position %zu\n", punctuation_translations[i].string, position);
 
-                        token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_KEYWORD);
+                        token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_PUNCTUATION);
                         token_data_punctuation_t * data = token->data;
 
                         token->line = line;
                         token->position = position - line_start;
 
-                        data->type = punctuation_strings[i].punctuation;
+                        data->type = punctuation_translations[i].punctuation;
 
-                        position += punctuation_strings[i].length;
+                        position += punctuation_translations[i].length;
 
                         punctuation_found = true;
                         break;
@@ -167,12 +284,12 @@ void scanner_scan(scanner_t * scanner, const char * buffer) {
             // keyword
             {
                 bool keyword_found = false;
-                for (size_t i = 0; i < KEYWORD_STRINGS_COUNT; i++) {
+                for (size_t i = 0; i < KEYWORD_TRANSLATIONS_COUNT; i++) {
                     if (
-                        strncmp(&buffer[position], keyword_strings[i].string, keyword_strings[i].length) == 0 &&
-                        !is_symbol_char(buffer[position + keyword_strings[i].length])
+                        strncmp(&buffer[position], keyword_translations[i].string, keyword_translations[i].length) == 0 &&
+                        !is_symbol_char(buffer[position + keyword_translations[i].length])
                     ) {
-                        debug_printf("Got keyword '%s' at position %zu\n", keyword_strings[i].string, position);
+                        debug_printf("Got keyword '%s' at position %zu\n", keyword_translations[i].string, position);
 
                         token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_KEYWORD);
                         token_data_keyword_t * data = token->data;
@@ -180,9 +297,9 @@ void scanner_scan(scanner_t * scanner, const char * buffer) {
                         token->line = line;
                         token->position = position - line_start;
 
-                        data->keyword = keyword_strings[i].keyword;
+                        data->keyword = keyword_translations[i].keyword;
 
-                        position += keyword_strings[i].length;
+                        position += keyword_translations[i].length;
 
                         keyword_found = true;
                         break;
@@ -204,7 +321,7 @@ void scanner_scan(scanner_t * scanner, const char * buffer) {
 
                     debug_printf("Got identifier '%s' at position %zu\n", name, position);
 
-                    token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_KEYWORD);
+                    token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_IDENTIFIER);
                     token_data_identifier_t * data = token->data;
 
                     token->line = line;
@@ -232,5 +349,27 @@ void scanner_scan(scanner_t * scanner, const char * buffer) {
 }
 
 void scanner_print_tokens(scanner_t * scanner) {
-    
+    char str_buffer[TOKEN_STRINGIFY_BUFFER_REQUIREMENT];
+
+    size_t line = 0;
+
+    debug_printf("%-6s Tokens\n", "Line");
+    debug_printf("%-6zu ", 1);
+
+    for (size_t i = 0; i < scanner->tb.token_count; i++) {
+        token_t * token = &scanner->tb.tokens[i];
+
+        if (line != token->line) {
+            line = token->line;
+
+            debug_printf("\n%-6zu ", token->line + 1);
+            fflush(stdout);
+        }
+
+        token_stringify(str_buffer, token);
+        debug_printf("%s ", str_buffer);
+        fflush(stdout);
+    }
+
+    debug_printf("\n");
 }
