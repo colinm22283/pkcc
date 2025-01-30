@@ -1,4 +1,5 @@
 #include <alloc.h>
+#include <info/usage.h>
 #include <debug/log.h>
 #include <scanner/scanner.h>
 #include <scanner/file_loader.h>
@@ -8,8 +9,8 @@ int main(int argc, const char ** argv) {
 
     options_parse_cli(argc, argv);
 
-    if (options.input_path == NULL) fatal_error("No input path specified\n");
-    if (options.output_path == NULL) fatal_error("No output path specified\n");
+    if (options.input_path == NULL) fatal_error("No input path specified\n" USAGE_STRING, argv[0]);
+    if (options.output_path == NULL) fatal_error("No output path specified\n" USAGE_STRING, argv[0]);
 
     file_loader_t file_loader;
     file_loader_init(&file_loader, options.input_path);
