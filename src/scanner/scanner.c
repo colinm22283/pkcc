@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <math.h>
 
 #include <alloc.h>
 #include <escape_characters.h>
@@ -30,7 +31,7 @@ static inline bool is_symbol_char(char c) {
 }
 static inline bool is_number_char(char c) {
     return (
-        is_symbol_char(c) ||
+        (c >= '0' && c <= '9') ||
         c == '.'
     );
 }
@@ -68,13 +69,38 @@ void scanner_scan(scanner_t * scanner, const char * buffer) {
 
         if (is_number_start_char(buffer[position])) { // number
             size_t old_position = position;
+            size_t number_start = 0;
 
             bool negative;
             if (buffer[position] == '-') {
                 negative = true;
                 position++;
+                number_start++;
             }
             else negative = false;
+
+            // check for number format
+            int base;
+            if (buffer[position] == '0') {
+                position++;
+                number_start++;
+                switch (buffer[position + 1]) {
+                    case 'x': {
+                        base = 16;
+                        position++;
+                        number_start++;
+                    } break;
+                    case 'b': {
+                        base = 2;
+                        position++;
+                        number_start++;
+                    } break;
+                    default: {
+                        base = 8;
+                    } break;
+                }
+            }
+            else base = 10;
 
             bool is_float = false;
             size_t number_length;
@@ -85,31 +111,9 @@ void scanner_scan(scanner_t * scanner, const char * buffer) {
             size_t number_postfix_length;
             for (
                 number_postfix_length = 0;
-                is_number_postfix_char(buffer[position + number_length - number_postfix_length - 1]);
+                is_number_postfix_char(buffer[position + number_length + number_postfix_length]);
                 number_postfix_length++
             );
-
-            size_t number_start = 0;
-
-            // check for number format
-            int base;
-            if (buffer[position] == '0') {
-                number_start++;
-                switch (buffer[position + 1]) {
-                    case 'x': {
-                        base = 16;
-                        number_start++;
-                    } break;
-                    case 'b': {
-                        base = 2;
-                        number_start++;
-                    } break;
-                    default: {
-                        base = 8;
-                    } break;
-                }
-            }
-            else base = 10;
 
             token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_CONSTANT);
             token_data_constant_t * data = token->data;
@@ -117,13 +121,21 @@ void scanner_scan(scanner_t * scanner, const char * buffer) {
             token->line = line;
             token->position = old_position - line_start;
 
-            // TODO: check for number type
+            debug_printf("Number length: %u\n", number_length);
+
             char * str_end;
             if (is_float) {
-                log_printf("Got number '%ull' at position %zu\n");
-
-                data->type = SCANNER_CONSTANT_TYPE_DOUBLE;
-                data->d = strtod(&buffer[position], &str_end);
+                if (
+                    number_postfix_length == 1 &&
+                    buffer[position + number_length] == 'f'
+                ) {
+                    data->type = SCANNER_CONSTANT_TYPE_FLOAT;
+                    data->f = strtof(&buffer[position], &str_end) * (negative ? -1.0f : 1.0f);
+                }
+                else {
+                    data->type = SCANNER_CONSTANT_TYPE_DOUBLE;
+                    data->d = strtod(&buffer[position], &str_end) * (negative ? -1.0 : 1.0);;
+                }
 
                 log_printf("Got number '%f' at position %zu\n", data->d, old_position);
             }
@@ -139,6 +151,62 @@ void scanner_scan(scanner_t * scanner, const char * buffer) {
                     data->u = strtoull(&buffer[position], &str_end, base);
 
                     log_printf("Got number '%llu' at position %zu\n", data->u, old_position);
+                }
+            }
+
+            if (number_postfix_length != 0) {
+                size_t clamped_postfix_length = number_postfix_length > 3 ? 3 : number_postfix_length;
+
+                char postfix[4] = { '\0', '\0', '\0', '\0' };
+                memcpy(postfix, &buffer[position + number_length - number_postfix_length], clamped_postfix_length);
+
+                if (!is_float) {
+                    size_t long_count = 0;
+                    bool unsigned_present = false;
+
+                    for (size_t i = 0; i < clamped_postfix_length; i++) {
+                        if (postfix[i] == 'u' || postfix[i] == 'U') unsigned_present = true;
+                        else if (postfix[i] == 'l' || postfix[i] == 'L') long_count++;
+                        else {
+                            size_t line_length;
+                            for (line_length = 0; buffer[line_start + line_length] != '\n'; line_length++);
+                            fatal_error(
+                                "%.*s\n%*c\nEncountered invalid numerical suffix character at line %zu, character %zu\n",
+                                line_length, &buffer[line_start],
+                                old_position - line_start + number_length - number_postfix_length + i + 1, '^',
+                                line + 1,
+                                old_position - line_start + number_length - number_postfix_length + i + 1
+                            );
+                        }
+                    }
+
+                    if ((long_count == 0 && !unsigned_present) || long_count > 2) {
+                        size_t line_length;
+                        for (line_length = 0; buffer[line_start + line_length] != '\n'; line_length++);
+                        fatal_error(
+                            "%.*s\n%*c\nEncountered invalid numerical suffix at line %zu, character %zu\n",
+                            line_length, &buffer[line_start],
+                            old_position - line_start + number_length - number_postfix_length + 1, '^',
+                            line + 1,
+                            old_position - line_start + number_length - number_postfix_length + 1
+                        );
+                    }
+
+                    if (unsigned_present) {
+                        switch (long_count) {
+                            case 0: {
+                                data->type = SCANNER_CONSTANT_TYPE_UI;
+                            } break;
+                            case 1: {
+                                data->type = SCANNER_CONSTANT_TYPE_UL;
+                            } break;
+                            case 2: {
+                                data->type = SCANNER_CONSTANT_TYPE_ULL;
+                            } break;
+
+                            default: break;
+                        }
+                    }
                 }
             }
 
@@ -262,8 +330,7 @@ void scanner_scan(scanner_t * scanner, const char * buffer) {
                 bool punctuation_found = false;
                 for (size_t i = 0; i < PUNCTUATION_TRANSLATIONS_COUNT; i++) {
                     if (strncmp(&buffer[position], punctuation_translations[i].string, punctuation_translations[i].length) == 0) {
-                        log_printf("Got punctuation '%s' at position %zu\n", punctuation_translations[i].string,
-                                   position);
+                        log_printf("Got punctuation '%s' at position %zu\n", punctuation_translations[i].string, position);
 
                         token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_PUNCTUATION);
                         token_data_punctuation_t * data = token->data;
@@ -279,6 +346,7 @@ void scanner_scan(scanner_t * scanner, const char * buffer) {
                         break;
                     }
                 }
+
                 if (punctuation_found) continue;
             }
 

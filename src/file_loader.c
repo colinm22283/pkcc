@@ -1,9 +1,9 @@
 #include <stdio.h>
 
 #include <alloc.h>
+#include <file_loader.h>
 #include <debug/log.h>
 #include <debug/error_handler.h>
-#include <scanner/file_loader.h>
 
 void file_loader_init(file_loader_t * fl, const char * path) {
     log_printf("Initializing file reader on '%s'\n", path);

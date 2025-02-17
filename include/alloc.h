@@ -18,7 +18,7 @@ static inline void * pkcc_alloc(size_t size) {
 }
 
 static inline void * pkcc_realloc(void * old, size_t size) {
-    debug_printf("Reallocating %zu bytes from %zu to ", size, old);
+    debug_printf("Reallocating %zu bytes from 0x%zx to ", size, old);
 
     void * alloc = realloc(old, size);
 

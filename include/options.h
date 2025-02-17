@@ -7,8 +7,13 @@ typedef struct {
     bool log_enable;
     bool debug_enable;
 
+    bool preprocess_only;
+
     const char * input_path;
     const char * output_path;
+
+    size_t include_directories_size, include_directories_capacity;
+    const char ** include_directories;
 } options_t;
 
 extern options_t options;
