@@ -7,6 +7,7 @@
 #include <preprocessor/directives/undef.h>
 #include <parsing/is_whitespace.h>
 #include <parsing/is_symbol_char.h>
+#include <parsing/is_line_end.h>
 
 void preprocessor_init(preprocessor_t * preprocessor) {
     preprocessor->output_size = 0;
@@ -43,8 +44,6 @@ void preprocessor_parse(preprocessor_t * preprocessor, const char * input_data) 
 
     const char * data = preprocessor->cfilter.data;
 
-    log_printf("DATA START\n%s\nDATA END\n", data);
-
     size_t position = 0;
     size_t line = 0;
     while (true) {
@@ -72,23 +71,44 @@ void preprocessor_parse(preprocessor_t * preprocessor, const char * input_data) 
                     size_t line_length;
                     for (line_length = 0; data[line_start + line_length] != '\n'; line_length++);
                     fatal_error(
-                        "%.*s\n%*c\nUnclosed multiline comment at line %zu, character %zu\n",
+                        "%.*s\n%*c\nInvalid include directive opening char, use \" or < at line %zu, character %zu\n",
                         line_length, &data[line_start],
-                        7, '^',
+                        8, '^',
                         line + 1,
-                        7
+                        8
                     );
                 }
+                position++;
+
+                const char * path = &data[position];
+                size_t path_size = 0;
+                while (data[position + path_size] != start_char) {
+                    if (is_line_end(data[position + path_size])) {
+                        size_t line_length;
+                        for (line_length = 0; data[line_start + line_length] != '\n'; line_length++);
+                        fatal_error(
+                            "%.*s\n%*c\nUnclosed include directive path argument at line %zu, character %zu\n",
+                            line_length, &data[line_start],
+                            position + path_size, '^',
+                            line + 1,
+                            position + path_size
+                        );
+                    }
+
+                    path_size++;
+                }
+
+
             }
             else {
                 size_t line_length;
                 for (line_length = 0; data[line_start + line_length] != '\n'; line_length++);
                 fatal_error(
-                    "%.*s\n%*c\nUnclosed multiline comment at line %zu, character %zu\n",
+                    "%.*s\n%*c\nUnknown preprocessor directive at line %zu, character %zu\n",
                     line_length, &data[line_start],
-                    0, '^',
+                    2, '^',
                     line + 1,
-                    0
+                    2
                 );
             }
 
@@ -96,8 +116,6 @@ void preprocessor_parse(preprocessor_t * preprocessor, const char * input_data) 
         }
         else {
             while (data[position] != '\n') {
-                log_printf("BEGIN REMAINING\n%s\nEND REMAINING\n", &data[position]);
-
                 if (is_symbol_start_char(data[position])) {
                     preprocessor_token_t * token = preprocessor_token_buffer_push(&preprocessor->tbuf);
 
@@ -146,7 +164,6 @@ void preprocessor_parse(preprocessor_t * preprocessor, const char * input_data) 
 
 void preprocessor_render(preprocessor_t * preprocessor) {
     for (size_t i = 0; i < preprocessor->tbuf.size; i++) {
-        log_printf("TEST\n");
         preprocessor_token_t * token = &preprocessor->tbuf.tokens[i];
 
         switch (token->type) {
@@ -182,7 +199,7 @@ void preprocessor_render(preprocessor_t * preprocessor) {
 
                 log_printf("Rendering content of length %zu\n", content->size);
 
-                for (size_t j = 0; j < content->size; j++) push_char(preprocessor, content->content[i]);
+                for (size_t j = 0; j < content->size; j++) push_char(preprocessor, content->content[j]);
             } break;
         }
     }
