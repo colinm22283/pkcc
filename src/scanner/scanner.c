@@ -2,7 +2,7 @@
 #include <math.h>
 
 #include <alloc.h>
-#include <escape_characters.h>
+#include <parsing/escape_characters.h>
 #include <debug/log.h>
 #include <debug/error_handler.h>
 #include <scanner/scanner.h>

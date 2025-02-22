@@ -14,8 +14,11 @@ typedef struct {
 
     size_t include_directories_size, include_directories_capacity;
     const char ** include_directories;
+
+    size_t max_preprocessor_depth;
 } options_t;
 
 extern options_t options;
 
 void options_parse_cli(int argc, const char ** argv);
+void options_free(void);
