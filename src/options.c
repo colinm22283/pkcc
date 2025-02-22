@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <alloc.h>
 #include <options.h>
+#include <parsing/is_symbol_char.h>
 #include <debug/error_handler.h>
 #include <info/version.h>
 #include <info/usage.h>
@@ -10,11 +12,19 @@ options_t options = {
     .log_enable = false,
     .debug_enable = false,
 
+    .preprocess_only = false,
+
     .input_path = NULL,
     .output_path = NULL,
+
+    .max_preprocessor_depth = 200,
 };
 
 void options_parse_cli(int argc, const char ** argv) {
+    options.include_directories_size = 0;
+    options.include_directories_capacity = 1;
+    options.include_directories = pkcc_alloc(options.include_directories_capacity * sizeof(const char *));
+
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
             if (strcmp(argv[i] + 1, "dd") == 0) {
@@ -47,6 +57,53 @@ void options_parse_cli(int argc, const char ** argv) {
 
                 options.output_path = argv[i];
             }
+            else if (strcmp(argv[i] + 1, "E") == 0) {
+                options.preprocess_only = true;
+            }
+            else if (strcmp(argv[i] + 1, "I") == 0) {
+                i++;
+
+                log_printf("Adding include directory \"%s\"\n", argv[i]);
+
+                options.include_directories[options.include_directories_size++] = argv[i];
+
+                if (options.include_directories_size == options.include_directories_capacity) {
+                    options.include_directories_capacity *= 2;
+
+                    options.include_directories = pkcc_realloc(options.include_directories, options.include_directories_capacity * sizeof(const char *));
+                }
+            }
+            else if (argv[i][1] == 'f') {
+                const char * data = &argv[i][2];
+
+                ssize_t equal_pos = 0;
+                while (data[equal_pos] != '=') {
+                    if (data[equal_pos] == '\0') {
+                        equal_pos = -1;
+                        break;
+                    }
+                    else if (!is_symbol_char(data[equal_pos])) fatal_error("Invalid -f switch\nFormat -f<variable_name>[=<value>]\n");
+
+                    equal_pos++;
+                }
+
+                if (equal_pos != -1) {
+                    if (strncmp(data, "max-include-depth=", 18) == 0) {
+                        char * end_ptr;
+                        options.max_preprocessor_depth = strtoull(&data[equal_pos + 1], &end_ptr, 10);
+
+                        if (!(data[equal_pos + 1] != '\0' && *end_ptr == '\0')) {
+                            fatal_error("Invalid -fmax-include-depth switch\nInvalid variable value\n");
+                        }
+                    }
+                    else {
+                        fatal_error("Invalid -f switch\nInvalid variable name\n");
+                    }
+                }
+                else {
+                    fatal_error("Invalid -f switch\nInvalid variable name\n");
+                }
+            }
             else {
                 fatal_error(
                     "Unknown command line argument '%s'\n"
@@ -68,4 +125,8 @@ void options_parse_cli(int argc, const char ** argv) {
             options.input_path = argv[i];
         }
     }
+}
+
+void options_free(void) {
+    pkcc_free(options.include_directories);
 }

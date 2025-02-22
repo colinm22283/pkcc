@@ -1,9 +1,9 @@
 #include <stdio.h>
 
 #include <alloc.h>
+#include <file/file_loader.h>
 #include <debug/log.h>
 #include <debug/error_handler.h>
-#include <scanner/file_loader.h>
 
 void file_loader_init(file_loader_t * fl, const char * path) {
     log_printf("Initializing file reader on '%s'\n", path);
@@ -13,7 +13,7 @@ void file_loader_init(file_loader_t * fl, const char * path) {
     if (file == NULL) fatal_error("Unable to open file with path '%s'\n", path);
 
     fseek(file, 0, SEEK_END);
-    ssize_t size = ftell(file);
+    size_t size = ftell(file);
 
     fseek(file, 0, SEEK_SET);
 

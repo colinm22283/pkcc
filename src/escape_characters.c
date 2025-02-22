@@ -1,4 +1,4 @@
-#include <escape_characters.h>
+#include <parsing/escape_characters.h>
 
 char parse_escape_char(const char * str, size_t * read_size) {
     switch (str[0]) {
