@@ -117,6 +117,9 @@ size_t phase1_punctuation[] = {
     [SCANNER_PUNCTUATION_TYPE_COMMA] = 44,
 };
 
+#define SCANNER_STRINGIFY_PHASE1_REQUIRED_LENGTH (1024)
+const char * scanner_stringify_phase1(token_t * token);
+
 void scanner_print_phase1(scanner_t * scanner) {
     for (size_t i = 0; i < scanner->tb.token_count; i++) {
         token_t * token = &scanner->tb.tokens[i];
@@ -133,28 +136,46 @@ void scanner_print_phase1(scanner_t * scanner) {
             case TOKEN_TYPE_KEYWORD: {
                 token_data_keyword_t * keyword = (token_data_keyword_t *) token->data;
 
-                char token_string[TOKEN_STRINGIFY_BUFFER_REQUIREMENT];
-                token_stringify(token_string, token);
-
-                printf("%zu Text %s\n", phase1_keywords[keyword->keyword], token_string);
+                printf("%zu Text %s\n", phase1_keywords[keyword->keyword], scanner_stringify_phase1(token));
             } break;
 
             case TOKEN_TYPE_CONSTANT: {
                 token_data_constant_t * constant = (token_data_constant_t *) token->data;
 
-                char token_string[TOKEN_STRINGIFY_BUFFER_REQUIREMENT];
-                token_stringify(token_string, token);
+                switch (constant->type) {
+                    case SCANNER_CONSTANT_TYPE_FLOAT:
+                        printf("%zu Text %f\n", phase1_constants[constant->type], constant->f);
+                        break;
 
-                printf("%zu Text %s\n", phase1_constants[constant->type], token_string);
+                    case SCANNER_CONSTANT_TYPE_DOUBLE:
+                        printf("%zu Text %f\n", phase1_constants[constant->type], constant->d);
+                        break;
+
+                    case SCANNER_CONSTANT_TYPE_UC:
+                    case SCANNER_CONSTANT_TYPE_SC:
+                        printf("%zu Text '%c'\n", phase1_constants[constant->type], (char) constant->s);
+                        break;
+
+                    case SCANNER_CONSTANT_TYPE_US:
+                    case SCANNER_CONSTANT_TYPE_UI:
+                    case SCANNER_CONSTANT_TYPE_UL:
+                    case SCANNER_CONSTANT_TYPE_ULL:
+                        printf("%zu Text %llu\n", phase1_constants[constant->type], constant->u);
+                        break;
+
+                    case SCANNER_CONSTANT_TYPE_SS:
+                    case SCANNER_CONSTANT_TYPE_SI:
+                    case SCANNER_CONSTANT_TYPE_SL:
+                    case SCANNER_CONSTANT_TYPE_SLL:
+                        printf("%zu Text %lld\n", phase1_constants[constant->type], constant->s);
+                        break;
+                }
             } break;
 
             case TOKEN_TYPE_PUNCTUATION: {
                 token_data_punctuation_t * punctuation = (token_data_punctuation_t *) token->data;
 
-                char token_string[TOKEN_STRINGIFY_BUFFER_REQUIREMENT];
-                token_stringify(token_string, token);
-
-                printf("%zu Text %s\n", phase1_punctuation[punctuation->type], token_string);
+                printf("%zu Text %s\n", phase1_punctuation[punctuation->type], scanner_stringify_phase1(token));
             } break;
 
             case TOKEN_TYPE_STRING_LITERAL: {
@@ -163,5 +184,121 @@ void scanner_print_phase1(scanner_t * scanner) {
                 printf("305 Text \"%s\"\n", string_literal->content);
             } break;
         }
+    }
+}
+
+const char * scanner_stringify_phase1(token_t * token) {
+    switch (token->type) {
+        case TOKEN_TYPE_KEYWORD: {
+            token_data_keyword_t * keyword = (token_data_keyword_t *) token->data;
+
+            switch (keyword->keyword) {
+                case SCANNER_KEYWORD_TYPE_BREAK: return "break";
+                case SCANNER_KEYWORD_TYPE_CASE: return "case";
+                case SCANNER_KEYWORD_TYPE_CHAR: return "char";
+                case SCANNER_KEYWORD_TYPE_CONST: return "const";
+                case SCANNER_KEYWORD_TYPE_CONTINUE: return "continue";
+                case SCANNER_KEYWORD_TYPE_DEFAULT: return "default";
+                case SCANNER_KEYWORD_TYPE_DO: return "do";
+                case SCANNER_KEYWORD_TYPE_DOUBLE: return "double";
+                case SCANNER_KEYWORD_TYPE_ELSE: return "else";
+                case SCANNER_KEYWORD_TYPE_ENUM: return "enum";
+                case SCANNER_KEYWORD_TYPE_EXTERN: return "extern";
+                case SCANNER_KEYWORD_TYPE_FLOAT: return "float";
+                case SCANNER_KEYWORD_TYPE_FOR: return "for";
+                case SCANNER_KEYWORD_TYPE_GOTO: return "goto";
+                case SCANNER_KEYWORD_TYPE_IF: return "if";
+                case SCANNER_KEYWORD_TYPE_INLINE: return "inline";
+                case SCANNER_KEYWORD_TYPE_INT: return "int";
+                case SCANNER_KEYWORD_TYPE_LONG: return "long";
+                case SCANNER_KEYWORD_TYPE_REGISTER: return "register";
+                case SCANNER_KEYWORD_TYPE_RESTRICT: return "restrict";
+                case SCANNER_KEYWORD_TYPE_RETURN: return "return";
+                case SCANNER_KEYWORD_TYPE_SHORT: return "short";
+                case SCANNER_KEYWORD_TYPE_SIGNED: return "signed";
+                case SCANNER_KEYWORD_TYPE_SIZEOF: return "sizeof";
+                case SCANNER_KEYWORD_TYPE_STATIC: return "static";
+                case SCANNER_KEYWORD_TYPE_STRUCT: return "struct";
+                case SCANNER_KEYWORD_TYPE_SWITCH: return "switch";
+                case SCANNER_KEYWORD_TYPE_TYPEDEF: return "typedef";
+                case SCANNER_KEYWORD_TYPE_UNION: return "union";
+                case SCANNER_KEYWORD_TYPE_UNSIGNED: return "unsigned";
+                case SCANNER_KEYWORD_TYPE_VOID: return "void";
+                case SCANNER_KEYWORD_TYPE_VOLATILE: return "volatile";
+                case SCANNER_KEYWORD_TYPE_WHILE: return "while";
+                case SCANNER_KEYWORD_TYPE_BOOL: return "_Bool";
+                case SCANNER_KEYWORD_TYPE_COMPLEX: return "complex";
+                case SCANNER_KEYWORD_TYPE_IMAGINARY: return "imaginary";
+
+                default: return "UNKNOWN";
+            }
+        }
+
+        case TOKEN_TYPE_PUNCTUATION: {
+            token_data_punctuation_t * punctuation = (token_data_punctuation_t *) token->data;
+
+            switch (punctuation->type) {
+                case SCANNER_PUNCTUATION_TYPE_PLUS: return "+";
+                case SCANNER_PUNCTUATION_TYPE_MINUS: return "-";
+                case SCANNER_PUNCTUATION_TYPE_STAR: return "*";
+                case SCANNER_PUNCTUATION_TYPE_SLASH: return "/";
+                case SCANNER_PUNCTUATION_TYPE_PERCENT: return "%";
+                case SCANNER_PUNCTUATION_TYPE_INCREMENT: return "++";
+                case SCANNER_PUNCTUATION_TYPE_DECREMENT: return "--";
+
+                case SCANNER_PUNCTUATION_TYPE_EQUAL_TO: return "==";
+                case SCANNER_PUNCTUATION_TYPE_NOT_EQUAL_TO: return "!=";
+                case SCANNER_PUNCTUATION_TYPE_GREATER_THAN: return ">";
+                case SCANNER_PUNCTUATION_TYPE_LESS_THAN: return "<";
+                case SCANNER_PUNCTUATION_TYPE_GREATER_THAN_OR_EQUAL_TO: return ">=";
+                case SCANNER_PUNCTUATION_TYPE_LESS_THAN_OR_EQUAL_TO: return "<=";
+
+                case SCANNER_PUNCTUATION_TYPE_LOGICAL_NEGATION: return "!";
+                case SCANNER_PUNCTUATION_TYPE_LOGICAL_AND: return "&&";
+                case SCANNER_PUNCTUATION_TYPE_LOGICAL_OR: return "||";
+
+                case SCANNER_PUNCTUATION_TYPE_BITWISE_NOT: return "~";
+                case SCANNER_PUNCTUATION_TYPE_AND: return "&";
+                case SCANNER_PUNCTUATION_TYPE_BITWISE_OR: return "|";
+                case SCANNER_PUNCTUATION_TYPE_BITWISE_XOR: return "^";
+                case SCANNER_PUNCTUATION_TYPE_BITWISE_SHIFT_LEFT: return "<<";
+                case SCANNER_PUNCTUATION_TYPE_BITWISE_SHIFT_RIGHT: return ">>";
+
+                case SCANNER_PUNCTUATION_TYPE_DIRECT_ASSIGNMENT: return "=";
+                case SCANNER_PUNCTUATION_TYPE_ADDITION_ASSIGNMENT: return "+=";
+                case SCANNER_PUNCTUATION_TYPE_SUBTRACTION_ASSIGNMENT: return "-=";
+                case SCANNER_PUNCTUATION_TYPE_MULTIPLICATION_ASSIGNMENT: return "*=";
+                case SCANNER_PUNCTUATION_TYPE_DIVISION_ASSIGNMENT: return "/=";
+                case SCANNER_PUNCTUATION_TYPE_MODULO_ASSIGNMENT: return "%=";
+                case SCANNER_PUNCTUATION_TYPE_BITWISE_AND_ASSIGNMENT: return "&=";
+                case SCANNER_PUNCTUATION_TYPE_BITWISE_OR_ASSIGNMENT: return "|=";
+                case SCANNER_PUNCTUATION_TYPE_BITWISE_XOR_ASSIGNMENT: return "^=";
+                case SCANNER_PUNCTUATION_TYPE_BITWISE_SHIFT_LEFT_ASSIGNMENT: return "<<=";
+                case SCANNER_PUNCTUATION_TYPE_BITWISE_SHIFT_RIGHT_ASSIGNMENT: return ">>=";
+
+                case SCANNER_PUNCTUATION_TYPE_DEREFERENCE: return "->";
+                case SCANNER_PUNCTUATION_TYPE_POINTER_TO_DEREFERENCE: return "->*";
+                case SCANNER_PUNCTUATION_TYPE_POINTER_TO_REFERENCE: return ".*";
+
+                case SCANNER_PUNCTUATION_TYPE_CURLY_OPEN: return "{";
+                case SCANNER_PUNCTUATION_TYPE_CURLY_CLOSE: return "}";
+                case SCANNER_PUNCTUATION_TYPE_SQUARE_OPEN: return "[";
+                case SCANNER_PUNCTUATION_TYPE_SQUARE_CLOSE: return "]";
+                case SCANNER_PUNCTUATION_TYPE_PAREN_OPEN: return "(";
+                case SCANNER_PUNCTUATION_TYPE_PAREN_CLOSE: return ")";
+
+                case SCANNER_PUNCTUATION_TYPE_SEMICOLON: return ";";
+                case SCANNER_PUNCTUATION_TYPE_COLON: return ":";
+
+                case SCANNER_PUNCTUATION_TYPE_ELLIPSIS: return "...";
+                case SCANNER_PUNCTUATION_TYPE_QUESTION_MARK: return "?";
+                case SCANNER_PUNCTUATION_TYPE_PERIOD: return ".";
+                case SCANNER_PUNCTUATION_TYPE_COMMA: return ",";
+
+                default: return "UNKNOWN";
+            }
+        }
+
+        default: return NULL;
     }
 }
