@@ -2,10 +2,11 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+#include <main.h>
 #include <options.h>
 #include <debug/error_handler.h>
 
-__attribute__((noreturn)) void fatal_error(const char * restrict fmt, ...) {
+__NORETURN void fatal_error(const char * restrict fmt, ...) {
     va_list args;
     va_start(args, fmt);
 
@@ -16,5 +17,5 @@ __attribute__((noreturn)) void fatal_error(const char * restrict fmt, ...) {
 
     va_end(args);
 
-    exit(1);
+    exit_and_free(1);
 }

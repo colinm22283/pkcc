@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <main.h>
 #include <options.h>
 #include <debug/line_error.h>
 
-__attribute__((noreturn)) void fatal_line_range_error(line_buffer_t * line_buffer, file_name_entry_t * file_name, const char * message, size_t line, size_t position, size_t size) {
+__NORETURN void fatal_line_range_error(line_buffer_t * line_buffer, file_name_entry_t * file_name, const char * message, size_t line, size_t position, size_t size) {
     if (options.color_enable) fprintf(stderr, "\033[31;1mERROR:\n");
     else fprintf(stderr, "ERROR:\n");
 
@@ -30,5 +31,5 @@ __attribute__((noreturn)) void fatal_line_range_error(line_buffer_t * line_buffe
 
     if (options.color_enable) fprintf(stderr, "\033[0m");
 
-    exit(1);
+    exit_and_free(1);
 }

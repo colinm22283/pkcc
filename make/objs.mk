@@ -2,6 +2,7 @@ OBJS+=$(OBJ_DIR)/main.o
 OBJS+=$(OBJ_DIR)/options.o
 OBJS+=$(OBJ_DIR)/escape_characters.o
 OBJS+=$(OBJ_DIR)/line_buffer.o
+OBJS+=$(OBJ_DIR)/free_list.o
 
 OBJS+=$(OBJ_DIR)/file/file_exists.o
 OBJS+=$(OBJ_DIR)/file/file_loader.o

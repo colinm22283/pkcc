@@ -1,3 +1,5 @@
 #pragma once
 
-__attribute__((noreturn)) void fatal_error(const char * message, ...);
+#include <defs.h>
+
+__NORETURN void fatal_error(const char * message, ...);

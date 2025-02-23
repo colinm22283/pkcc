@@ -112,6 +112,8 @@ void preprocessor_parse(preprocessor_t * preprocessor, const char * input_data) 
                 char * resolved_path = NULL;
                 if (user_include) {
                     if (!file_exists(path)) {
+                        pkcc_free(path);
+
                         size_t line_length;
                         for (line_length = 0; data[line_start + line_length] != '\n'; line_length++);
                         fatal_error(
@@ -142,6 +144,8 @@ void preprocessor_parse(preprocessor_t * preprocessor, const char * input_data) 
                     }
 
                     if (path != NULL) {
+                        pkcc_free(path);
+
                         size_t line_length;
                         for (line_length = 0; data[line_start + line_length] != '\n'; line_length++);
                         fatal_error(
