@@ -8,18 +8,18 @@ CFLAGS+=-Wall -Wextra
 
 INCLUDE_DIRS=include
 
-export OBJS=
-include $(MAKE_DIR)/objs.mk
-include $(MAKE_DIR)/targets.mk
-include $(MAKE_DIR)/tests.mk
-
 .DEFAULT: all
 .PHONY: all
-all: tests $(BUILD_DIR)/pkcc
+all: $(BUILD_DIR)/pkcc
 
 .PHONY: debug
 debug: CFLAGS+=-g -O0
 debug: all
+
+export OBJS=
+include $(MAKE_DIR)/objs.mk
+include $(MAKE_DIR)/targets.mk
+include $(MAKE_DIR)/tests.mk
 
 $(BUILD_DIR)/pkcc: $(OBJS)
 	mkdir -p $(@D)

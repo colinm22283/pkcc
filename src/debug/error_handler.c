@@ -2,17 +2,20 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+#include <main.h>
+#include <options.h>
 #include <debug/error_handler.h>
 
-__attribute__((noreturn)) void fatal_error(const char * restrict fmt, ...) {
+__NORETURN void fatal_error(const char * restrict fmt, ...) {
     va_list args;
     va_start(args, fmt);
 
-    fprintf(stderr, "\033[31;1mERROR:\n");
+    if (options.color_enable) fprintf(stderr, "\033[31;1mERROR:\n");
+    else fprintf(stderr, "ERROR:\n");
     vfprintf(stderr, fmt, args);
-    fprintf(stderr, "\033[0m");
+    if (options.color_enable) fprintf(stderr, "\033[0m");
 
     va_end(args);
 
-    exit(1);
+    exit_and_free(1);
 }

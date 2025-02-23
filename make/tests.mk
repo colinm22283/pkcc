@@ -5,6 +5,10 @@ export PKCC=$(CURDIR)/$(BUILD_DIR)/pkcc
 test-%: $(BUILD_DIR)/pkcc
 	cd $(TESTS_DIR) && $(MAKE) test-$*
 
+.PHONY: valgrind-%
+valgrind-%: $(BUILD_DIR)/pkcc
+	cd $(TESTS_DIR) && $(MAKE) valgrind-$*
+
 .PHONY: tests
 tests: $(BUILD_DIR)/pkcc
 	cd $(TESTS_DIR) && $(MAKE) tests

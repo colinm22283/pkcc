@@ -112,6 +112,8 @@ void preprocessor_parse(preprocessor_t * preprocessor, const char * input_data) 
                 char * resolved_path = NULL;
                 if (user_include) {
                     if (!file_exists(path)) {
+                        pkcc_free(path);
+
                         size_t line_length;
                         for (line_length = 0; data[line_start + line_length] != '\n'; line_length++);
                         fatal_error(
@@ -142,6 +144,8 @@ void preprocessor_parse(preprocessor_t * preprocessor, const char * input_data) 
                     }
 
                     if (path != NULL) {
+                        pkcc_free(path);
+
                         size_t line_length;
                         for (line_length = 0; data[line_start + line_length] != '\n'; line_length++);
                         fatal_error(
@@ -300,16 +304,33 @@ void preprocessor_parse(preprocessor_t * preprocessor, const char * input_data) 
             }
         }
 
+        if (data[position] == '\n') position++;
+
         line++;
-        position++;
     }
 
     preprocessor_log_tokens(preprocessor);
 }
 
 void preprocessor_render(preprocessor_t * preprocessor, line_buffer_t * line_buffer) {
+    size_t current_line = preprocessor->tbuf.tokens[0].line;
+    file_name_entry_t * file_name = preprocessor->tbuf.tokens[0].file_name;
+
+    size_t line_size = 0;
+    size_t line_capacity = 16;
+    char * line = pkcc_alloc(line_capacity);
+
     for (size_t i = 0; i < preprocessor->tbuf.size; i++) {
         preprocessor_token_t * token = &preprocessor->tbuf.tokens[i];
+
+        if (token->line != current_line || token->file_name != file_name) {
+            line_buffer_push_line(line_buffer, line, line_size, file_name, current_line);
+
+            current_line = token->line;
+            file_name = token->file_name;
+
+            line_size = 0;
+        }
 
         switch (token->type) {
             case PREPROCESSOR_TOKEN_TYPE_DIRECTIVE: {
@@ -319,7 +340,7 @@ void preprocessor_render(preprocessor_t * preprocessor, line_buffer_t * line_buf
                     default: break; // TODO: implement
                 }
 
-                line_buffer_push_line(line_buffer, "", 0, token->file_name, token->line);
+//                line_buffer_push_line(line_buffer, "", 0, token->file_name, token->line);
             } break;
 
             case PREPROCESSOR_TOKEN_TYPE_SYMBOL: {
@@ -333,7 +354,14 @@ void preprocessor_render(preprocessor_t * preprocessor, line_buffer_t * line_buf
                 else {
                     log_printf("Rendering symbol of length %zu with %zu arguments\n", symbol->size, symbol->arg_count);
 
-                    line_buffer_push_line(line_buffer, symbol->symbol, symbol->size, token->file_name, token->line);
+                    if (line_size + symbol->size > line_capacity) {
+                        while (line_size + symbol->size > line_capacity) line_capacity *= 2;
+
+                        line = pkcc_realloc(line, line_capacity);
+                    }
+
+                    memcpy(&line[line_size], symbol->symbol, symbol->size);
+                    line_size += symbol->size;
                 }
             } break;
 
@@ -342,7 +370,14 @@ void preprocessor_render(preprocessor_t * preprocessor, line_buffer_t * line_buf
 
                 log_printf("Rendering content of length %zu\n", content->size);
 
-                line_buffer_push_line(line_buffer, content->content, content->size, token->file_name, token->line);
+                if (line_size + content->size > line_capacity) {
+                    while (line_size + content->size > line_capacity) line_capacity *= 2;
+
+                    line = pkcc_realloc(line, line_capacity);
+                }
+
+                memcpy(&line[line_size], content->content, content->size);
+                line_size += content->size;
             } break;
 
             case PREPROCESSOR_TOKEN_TYPE_STRING: {
@@ -350,10 +385,21 @@ void preprocessor_render(preprocessor_t * preprocessor, line_buffer_t * line_buf
 
                 log_printf("Rendering string of length %zu\n", string->size);
 
-                line_buffer_push_line(line_buffer, string->content, string->size, token->file_name, token->line);
+                if (line_size + string->size > line_capacity) {
+                    while (line_size + string->size > line_capacity) line_capacity *= 2;
+
+                    line = pkcc_realloc(line, line_capacity);
+                }
+
+                memcpy(&line[line_size], string->content, string->size);
+                line_size += string->size;
             }
         }
     }
+
+    line_buffer_push_line(line_buffer, line, line_size, file_name, current_line);
+
+    pkcc_free(line);
 
     log_printf("BEGIN RENDERED FILE\n");
     for (size_t i = 0; i < line_buffer->size; i++) {

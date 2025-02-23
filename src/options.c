@@ -11,6 +11,9 @@
 options_t options = {
     .log_enable = false,
     .debug_enable = false,
+    .color_enable = true,
+
+    .phase1 = false,
 
     .preprocess_only = false,
 
@@ -73,6 +76,9 @@ void options_parse_cli(int argc, const char ** argv) {
                     options.include_directories = pkcc_realloc(options.include_directories, options.include_directories_capacity * sizeof(const char *));
                 }
             }
+            else if (strcmp(argv[i] + 1, "1") == 0) {
+                options.phase1 = true;
+            }
             else if (argv[i][1] == 'f') {
                 const char * data = &argv[i][2];
 
@@ -101,7 +107,12 @@ void options_parse_cli(int argc, const char ** argv) {
                     }
                 }
                 else {
-                    fatal_error("Invalid -f switch\nInvalid variable name\n");
+                    if (strncmp(data, "no-diagnostics-color", 20) == 0) {
+                        options.color_enable = false;
+                    }
+                    else {
+                        fatal_error("Invalid -f switch\nInvalid variable name\n");
+                    }
                 }
             }
             else {
