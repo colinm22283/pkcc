@@ -58,7 +58,7 @@ int main(int argc, const char ** argv) {
         return 0;
     }
 
-//    scanner_scan(&scanner, preprocessor.output);
+    scanner_scan(&scanner, &preprocessor_output);
 
     line_buffer_free(&preprocessor_output);
     preprocessor_free(&preprocessor);

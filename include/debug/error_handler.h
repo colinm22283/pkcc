@@ -1,3 +1,3 @@
 #pragma once
 
-void fatal_error(const char * message, ...);
+__attribute__((noreturn)) void fatal_error(const char * message, ...);

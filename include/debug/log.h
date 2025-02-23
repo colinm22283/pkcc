@@ -10,9 +10,9 @@ static inline void log_printf(const char * restrict fmt, ...) {
         va_list args;
         va_start(args, fmt);
 
-        printf("\033[36;1m");
+        if (options.color_enable) printf("\033[36;1m");
         vprintf(fmt, args);
-        printf("\033[0m");
+        if (options.color_enable) printf("\033[0m");
         fflush(stdout);
 
         va_end(args);
@@ -20,9 +20,9 @@ static inline void log_printf(const char * restrict fmt, ...) {
 }
 
 static inline void log_putc(char c) {
-    printf("\033[36;1m");
+    if (options.color_enable) printf("\033[36;1m");
     putc(c, stdout);
-    printf("\033[0m");
+    if (options.color_enable) printf("\033[0m");
 }
 
 static inline void log_print_escaped(const char * restrict str) {
@@ -49,9 +49,9 @@ static inline void debug_printf(const char * restrict fmt, ...) {
         va_list args;
         va_start(args, fmt);
 
-        printf("\033[35m");
+        if (options.color_enable) printf("\033[35m");
         vprintf(fmt, args);
-        printf("\033[0m");
+        if (options.color_enable) printf("\033[0m");
         fflush(stdout);
 
         va_end(args);
@@ -59,7 +59,7 @@ static inline void debug_printf(const char * restrict fmt, ...) {
 }
 
 static inline void debug_putc(char c) {
-    printf("\033[35m");
+    if (options.color_enable) printf("\033[35m");
     putc(c, stdout);
-    printf("\033[0m");
+    if (options.color_enable) printf("\033[0m");
 }

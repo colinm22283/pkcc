@@ -11,6 +11,7 @@
 options_t options = {
     .log_enable = false,
     .debug_enable = false,
+    .color_enable = true,
 
     .preprocess_only = false,
 
@@ -101,7 +102,12 @@ void options_parse_cli(int argc, const char ** argv) {
                     }
                 }
                 else {
-                    fatal_error("Invalid -f switch\nInvalid variable name\n");
+                    if (strncmp(data, "no-diagnostics-color", 20) == 0) {
+                        options.color_enable = false;
+                    }
+                    else {
+                        fatal_error("Invalid -f switch\nInvalid variable name\n");
+                    }
                 }
             }
             else {

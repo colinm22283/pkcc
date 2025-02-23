@@ -6,6 +6,7 @@
 typedef struct {
     bool log_enable;
     bool debug_enable;
+    bool color_enable;
 
     bool preprocess_only;
 

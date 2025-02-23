@@ -9,6 +9,7 @@ OBJS+=$(OBJ_DIR)/file/file_writer.o
 OBJS+=$(OBJ_DIR)/file/file_name_registry.o
 
 OBJS+=$(OBJ_DIR)/debug/error_handler.o
+OBJS+=$(OBJ_DIR)/debug/line_error.o
 
 OBJS+=$(OBJ_DIR)/preprocessor/preprocessor.o
 OBJS+=$(OBJ_DIR)/preprocessor/variable_map.o
