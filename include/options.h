@@ -8,6 +8,8 @@ typedef struct {
     bool debug_enable;
     bool color_enable;
 
+    bool phase1;
+
     bool preprocess_only;
 
     const char * input_path;

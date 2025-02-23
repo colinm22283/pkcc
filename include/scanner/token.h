@@ -1,5 +1,7 @@
 #pragma once
 
+#include <file/file_name_registry.h>
+
 typedef enum {
     TOKEN_TYPE_IDENTIFIER,
     TOKEN_TYPE_KEYWORD,
@@ -10,6 +12,7 @@ typedef enum {
 
 typedef struct {
     token_type_t type;
+    file_name_entry_t * file_name;
     size_t line, position;
     void * data;
 } token_t;

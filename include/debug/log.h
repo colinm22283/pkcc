@@ -4,15 +4,16 @@
 #include <stdarg.h>
 
 #include <options.h>
+#include <debug/output_colors.h>
 
 static inline void log_printf(const char * restrict fmt, ...) {
     if (options.log_enable) {
         va_list args;
         va_start(args, fmt);
 
-        if (options.color_enable) printf("\033[36;1m");
+        if (options.color_enable) printf(OUTPUT_COLOR_LOG);
         vprintf(fmt, args);
-        if (options.color_enable) printf("\033[0m");
+        if (options.color_enable) printf(OUTPUT_COLOR_RESET);
         fflush(stdout);
 
         va_end(args);
@@ -20,9 +21,9 @@ static inline void log_printf(const char * restrict fmt, ...) {
 }
 
 static inline void log_putc(char c) {
-    if (options.color_enable) printf("\033[36;1m");
+    if (options.color_enable) printf(OUTPUT_COLOR_LOG);
     putc(c, stdout);
-    if (options.color_enable) printf("\033[0m");
+    if (options.color_enable) printf(OUTPUT_COLOR_RESET);
 }
 
 static inline void log_print_escaped(const char * restrict str) {
@@ -49,9 +50,9 @@ static inline void debug_printf(const char * restrict fmt, ...) {
         va_list args;
         va_start(args, fmt);
 
-        if (options.color_enable) printf("\033[35m");
+        if (options.color_enable) printf(OUTPUT_COLOR_DEBUG);
         vprintf(fmt, args);
-        if (options.color_enable) printf("\033[0m");
+        if (options.color_enable) printf(OUTPUT_COLOR_RESET);
         fflush(stdout);
 
         va_end(args);
@@ -59,7 +60,7 @@ static inline void debug_printf(const char * restrict fmt, ...) {
 }
 
 static inline void debug_putc(char c) {
-    if (options.color_enable) printf("\033[35m");
+    if (options.color_enable) printf(OUTPUT_COLOR_DEBUG);
     putc(c, stdout);
-    if (options.color_enable) printf("\033[0m");
+    if (options.color_enable) printf(OUTPUT_COLOR_RESET);
 }

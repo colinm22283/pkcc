@@ -14,6 +14,7 @@
 #include <preprocessor/preprocessor.h>
 
 #include <scanner/scanner.h>
+#include <scanner/phase1.h>
 
 free_list_t free_list;
 
@@ -69,6 +70,12 @@ int main(int argc, const char ** argv) {
     if (options.log_enable) {
         log_printf("Printing scanner tokens:\n");
         scanner_print_tokens(&scanner);
+    }
+
+    if (options.phase1) {
+        scanner_print_phase1(&scanner);
+
+        exit_and_free(0);
     }
 
     exit_and_free(0);

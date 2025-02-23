@@ -100,16 +100,13 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                     if (buffer[position + number_length] == '.') is_float = true;
                 }
 
-                size_t number_postfix_length;
-                for (
-                    number_postfix_length = 0;
-                    is_number_postfix_char(buffer[position + number_length + number_postfix_length]);
-                    number_postfix_length++
-                    );
+                size_t number_postfix_length = 0;
+                while (is_number_postfix_char(buffer[position + number_length + number_postfix_length])) number_postfix_length++;
 
                 token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_CONSTANT);
                 token_data_constant_t * data = token->data;
 
+                token->file_name = line->metadata.file_name;
                 token->line = line_number;
                 token->position = old_position;
 
@@ -166,7 +163,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                                     "Encountered invalid numerical suffix character",
                                     line_number,
                                     old_position,
-                                    number_postfix_length
+                                    number_length + number_postfix_length
                                 );
                             }
                         }
@@ -178,7 +175,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                                 "Encountered invalid numerical suffix",
                                 line_number,
                                 old_position,
-                                number_postfix_length
+                                number_length + number_postfix_length
                             );
                         }
 
@@ -220,6 +217,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                 token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_STRING_LITERAL);
                 token_data_string_literal_t * data = token->data;
 
+                token->file_name = line->metadata.file_name;
                 token->line = line_number;
                 token->position = position;
 
@@ -264,6 +262,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                         token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_CONSTANT);
                         token_data_constant_t * data = token->data;
 
+                        token->file_name = line->metadata.file_name;
                         token->line = line_number;
                         token->position = position;
 
@@ -300,6 +299,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                 token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_CONSTANT);
                 token_data_constant_t * data = token->data;
 
+                token->file_name = line->metadata.file_name;
                 token->line = line_number;
                 token->position = position;
 
@@ -321,6 +321,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                             token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_PUNCTUATION);
                             token_data_punctuation_t * data = token->data;
 
+                            token->file_name = line->metadata.file_name;
                             token->line = line_number;
                             token->position = position;
 
@@ -349,6 +350,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                             token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_KEYWORD);
                             token_data_keyword_t * data = token->data;
 
+                            token->file_name = line->metadata.file_name;
                             token->line = line_number;
                             token->position = position;
 
@@ -379,6 +381,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                         token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_IDENTIFIER);
                         token_data_identifier_t * data = token->data;
 
+                        token->file_name = line->metadata.file_name;
                         token->line = line_number;
                         token->position = position;
                         data->name = name;

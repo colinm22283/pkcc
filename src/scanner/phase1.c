@@ -1,0 +1,167 @@
+#include <scanner/phase1.h>
+#include <scanner/token.h>
+#include <scanner/token_stringify.h>
+
+size_t phase1_keywords[] = {
+    [SCANNER_KEYWORD_TYPE_BREAK] = 408,
+    [SCANNER_KEYWORD_TYPE_CASE] = 412,
+    [SCANNER_KEYWORD_TYPE_CHAR] = 301,
+    [SCANNER_KEYWORD_TYPE_CONST] = 401,
+    [SCANNER_KEYWORD_TYPE_CONTINUE] = 409,
+    [SCANNER_KEYWORD_TYPE_DEFAULT] = 413,
+    [SCANNER_KEYWORD_TYPE_DO] = 405,
+    [SCANNER_KEYWORD_TYPE_DOUBLE] = 301,
+    [SCANNER_KEYWORD_TYPE_ELSE] = 407,
+    [SCANNER_KEYWORD_TYPE_ENUM] = 414,
+    [SCANNER_KEYWORD_TYPE_EXTERN] = 415,
+    [SCANNER_KEYWORD_TYPE_FLOAT] = 301,
+    [SCANNER_KEYWORD_TYPE_FOR] = 403,
+    [SCANNER_KEYWORD_TYPE_GOTO] = 416,
+    [SCANNER_KEYWORD_TYPE_IF] = 406,
+    [SCANNER_KEYWORD_TYPE_INLINE] = 417,
+    [SCANNER_KEYWORD_TYPE_INT] = 301,
+    [SCANNER_KEYWORD_TYPE_LONG] = 301,
+    [SCANNER_KEYWORD_TYPE_REGISTER] = 418,
+    [SCANNER_KEYWORD_TYPE_RESTRICT] = 419,
+    [SCANNER_KEYWORD_TYPE_RETURN] = 410,
+    [SCANNER_KEYWORD_TYPE_SHORT] = 301,
+    [SCANNER_KEYWORD_TYPE_SIGNED] = 420,
+    [SCANNER_KEYWORD_TYPE_SIZEOF] = 421,
+    [SCANNER_KEYWORD_TYPE_STATIC] = 422,
+    [SCANNER_KEYWORD_TYPE_STRUCT] = 402,
+    [SCANNER_KEYWORD_TYPE_SWITCH] = 411,
+    [SCANNER_KEYWORD_TYPE_TYPEDEF] = 423,
+    [SCANNER_KEYWORD_TYPE_UNION] = 424,
+    [SCANNER_KEYWORD_TYPE_UNSIGNED] = 425,
+    [SCANNER_KEYWORD_TYPE_VOID] = 301,
+    [SCANNER_KEYWORD_TYPE_VOLATILE] = 426,
+    [SCANNER_KEYWORD_TYPE_WHILE] = 404,
+    [SCANNER_KEYWORD_TYPE_BOOL] = 301,
+    [SCANNER_KEYWORD_TYPE_COMPLEX] = 427,
+    [SCANNER_KEYWORD_TYPE_IMAGINARY] = 328,
+};
+
+size_t phase1_constants[] = {
+    [SCANNER_CONSTANT_TYPE_UC] = 302,
+    [SCANNER_CONSTANT_TYPE_US] = 302,
+    [SCANNER_CONSTANT_TYPE_UI] = 303,
+    [SCANNER_CONSTANT_TYPE_UL] = 303,
+    [SCANNER_CONSTANT_TYPE_ULL] = 303,
+
+    [SCANNER_CONSTANT_TYPE_SC] = 302,
+    [SCANNER_CONSTANT_TYPE_SS] = 302,
+    [SCANNER_CONSTANT_TYPE_SI] = 303,
+    [SCANNER_CONSTANT_TYPE_SL] = 303,
+    [SCANNER_CONSTANT_TYPE_SLL] = 303,
+
+    [SCANNER_CONSTANT_TYPE_FLOAT] = 304,
+    [SCANNER_CONSTANT_TYPE_DOUBLE] = 304,
+};
+
+size_t phase1_punctuation[] = {
+    [SCANNER_PUNCTUATION_TYPE_PLUS] = 42,
+    [SCANNER_PUNCTUATION_TYPE_MINUS] = 45,
+    [SCANNER_PUNCTUATION_TYPE_STAR] = 42,
+    [SCANNER_PUNCTUATION_TYPE_SLASH] = 47,
+    [SCANNER_PUNCTUATION_TYPE_PERCENT] = 37,
+    [SCANNER_PUNCTUATION_TYPE_INCREMENT] = 355,
+    [SCANNER_PUNCTUATION_TYPE_DECREMENT] = 356,
+
+    [SCANNER_PUNCTUATION_TYPE_EQUAL_TO] = 351,
+    [SCANNER_PUNCTUATION_TYPE_NOT_EQUAL_TO] = 352,
+    [SCANNER_PUNCTUATION_TYPE_GREATER_THAN] = 62,
+    [SCANNER_PUNCTUATION_TYPE_LESS_THAN] = 60,
+    [SCANNER_PUNCTUATION_TYPE_GREATER_THAN_OR_EQUAL_TO] = 353,
+    [SCANNER_PUNCTUATION_TYPE_LESS_THAN_OR_EQUAL_TO] = 354,
+
+    [SCANNER_PUNCTUATION_TYPE_LOGICAL_NEGATION] = 33,
+    [SCANNER_PUNCTUATION_TYPE_LOGICAL_AND] = 358,
+    [SCANNER_PUNCTUATION_TYPE_LOGICAL_OR] = 357,
+
+    [SCANNER_PUNCTUATION_TYPE_BITWISE_NOT] = 126,
+    [SCANNER_PUNCTUATION_TYPE_AND] = 38,
+    [SCANNER_PUNCTUATION_TYPE_BITWISE_OR] = 124,
+    [SCANNER_PUNCTUATION_TYPE_BITWISE_XOR] = 94,
+    [SCANNER_PUNCTUATION_TYPE_BITWISE_SHIFT_LEFT] = 365,
+    [SCANNER_PUNCTUATION_TYPE_BITWISE_SHIFT_RIGHT] = 366,
+
+    [SCANNER_PUNCTUATION_TYPE_DIRECT_ASSIGNMENT] = 61,
+    [SCANNER_PUNCTUATION_TYPE_ADDITION_ASSIGNMENT] = 361,
+    [SCANNER_PUNCTUATION_TYPE_SUBTRACTION_ASSIGNMENT] = 362,
+    [SCANNER_PUNCTUATION_TYPE_MULTIPLICATION_ASSIGNMENT] = 363,
+    [SCANNER_PUNCTUATION_TYPE_DIVISION_ASSIGNMENT] = 364,
+    [SCANNER_PUNCTUATION_TYPE_MODULO_ASSIGNMENT] = 367,
+    [SCANNER_PUNCTUATION_TYPE_BITWISE_AND_ASSIGNMENT] = 368,
+    [SCANNER_PUNCTUATION_TYPE_BITWISE_OR_ASSIGNMENT] = 369,
+    [SCANNER_PUNCTUATION_TYPE_BITWISE_XOR_ASSIGNMENT] = 370,
+    [SCANNER_PUNCTUATION_TYPE_BITWISE_SHIFT_LEFT_ASSIGNMENT] = 371,
+    [SCANNER_PUNCTUATION_TYPE_BITWISE_SHIFT_RIGHT_ASSIGNMENT] = 372,
+
+    [SCANNER_PUNCTUATION_TYPE_DEREFERENCE] = 373,
+    [SCANNER_PUNCTUATION_TYPE_POINTER_TO_DEREFERENCE] = 374,
+    [SCANNER_PUNCTUATION_TYPE_POINTER_TO_REFERENCE] = 375,
+
+    [SCANNER_PUNCTUATION_TYPE_CURLY_OPEN] = 123,
+    [SCANNER_PUNCTUATION_TYPE_CURLY_CLOSE] = 125,
+    [SCANNER_PUNCTUATION_TYPE_SQUARE_OPEN] = 91,
+    [SCANNER_PUNCTUATION_TYPE_SQUARE_CLOSE] = 93,
+    [SCANNER_PUNCTUATION_TYPE_PAREN_OPEN] = 40,
+    [SCANNER_PUNCTUATION_TYPE_PAREN_CLOSE] = 41,
+
+    [SCANNER_PUNCTUATION_TYPE_SEMICOLON] = 59,
+    [SCANNER_PUNCTUATION_TYPE_COLON] = 58,
+
+    [SCANNER_PUNCTUATION_TYPE_ELLIPSIS] = 376,
+    [SCANNER_PUNCTUATION_TYPE_QUESTION_MARK] = 63,
+    [SCANNER_PUNCTUATION_TYPE_PERIOD] = 46,
+    [SCANNER_PUNCTUATION_TYPE_COMMA] = 44,
+};
+
+void scanner_print_phase1(scanner_t * scanner) {
+    for (size_t i = 0; i < scanner->tb.token_count; i++) {
+        token_t * token = &scanner->tb.tokens[i];
+
+        printf("File '%s' Line %zu Token ", token->file_name->absolute_path, token->line + 1);
+
+        switch (token->type) {
+            case TOKEN_TYPE_IDENTIFIER: {
+                token_data_identifier_t * identifier = (token_data_identifier_t *) token->data;
+
+                printf("306 Text %s\n", identifier->name);
+            } break;
+
+            case TOKEN_TYPE_KEYWORD: {
+                token_data_keyword_t * keyword = (token_data_keyword_t *) token->data;
+
+                char token_string[TOKEN_STRINGIFY_BUFFER_REQUIREMENT];
+                token_stringify(token_string, token);
+
+                printf("%zu Text %s\n", phase1_keywords[keyword->keyword], token_string);
+            } break;
+
+            case TOKEN_TYPE_CONSTANT: {
+                token_data_constant_t * constant = (token_data_constant_t *) token->data;
+
+                char token_string[TOKEN_STRINGIFY_BUFFER_REQUIREMENT];
+                token_stringify(token_string, token);
+
+                printf("%zu Text %s\n", phase1_constants[constant->type], token_string);
+            } break;
+
+            case TOKEN_TYPE_PUNCTUATION: {
+                token_data_punctuation_t * punctuation = (token_data_punctuation_t *) token->data;
+
+                char token_string[TOKEN_STRINGIFY_BUFFER_REQUIREMENT];
+                token_stringify(token_string, token);
+
+                printf("%zu Text %s\n", phase1_punctuation[punctuation->type], token_string);
+            } break;
+
+            case TOKEN_TYPE_STRING_LITERAL: {
+                token_data_string_literal_t * string_literal = (token_data_string_literal_t *) token->data;
+
+                printf("305 Text \"%s\"\n", string_literal->content);
+            } break;
+        }
+    }
+}

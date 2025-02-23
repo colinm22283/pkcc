@@ -11,6 +11,7 @@ OBJS+=$(OBJ_DIR)/file/file_name_registry.o
 
 OBJS+=$(OBJ_DIR)/debug/error_handler.o
 OBJS+=$(OBJ_DIR)/debug/line_error.o
+OBJS+=$(OBJ_DIR)/debug/line_warning.o
 
 OBJS+=$(OBJ_DIR)/preprocessor/preprocessor.o
 OBJS+=$(OBJ_DIR)/preprocessor/variable_map.o
@@ -22,3 +23,4 @@ OBJS+=$(OBJ_DIR)/scanner/token.o
 OBJS+=$(OBJ_DIR)/scanner/token_buffer.o
 OBJS+=$(OBJ_DIR)/scanner/token_translation.o
 OBJS+=$(OBJ_DIR)/scanner/token_stringify.o
+OBJS+=$(OBJ_DIR)/scanner/phase1.o

@@ -13,6 +13,8 @@ options_t options = {
     .debug_enable = false,
     .color_enable = true,
 
+    .phase1 = false,
+
     .preprocess_only = false,
 
     .input_path = NULL,
@@ -73,6 +75,9 @@ void options_parse_cli(int argc, const char ** argv) {
 
                     options.include_directories = pkcc_realloc(options.include_directories, options.include_directories_capacity * sizeof(const char *));
                 }
+            }
+            else if (strcmp(argv[i] + 1, "1") == 0) {
+                options.phase1 = true;
             }
             else if (argv[i][1] == 'f') {
                 const char * data = &argv[i][2];
