@@ -2,8 +2,8 @@ include $(TEST_INCLUDE)
 
 .PHONY: run
 run: $(TEST_DIR)/test.c
-	$(PKCC) -1 $(TEST_DIR)/test.c -o $(TEST_DIR)/test.pp
+	$(PKCC) -dd -1 $(TEST_DIR)/test.c -o $(TEST_DIR)/test.pp
 
 .PHONY: valgrind
 valgrind: $(TEST_DIR)/test.c
-	$(VALGRIND) $(PKCC) -1 $(TEST_DIR)/test.c -o $(TEST_DIR)/test.pp
+	$(VALGRIND) $(PKCC) -dd -1 $(TEST_DIR)/test.c -o $(TEST_DIR)/test.pp

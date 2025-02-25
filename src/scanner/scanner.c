@@ -4,11 +4,13 @@
 #include <parsing/escape_characters.h>
 #include <parsing/is_symbol_char.h>
 #include <parsing/is_whitespace.h>
+#include <parsing/is_number_char.h>
 #include <debug/log.h>
 #include <debug/line_error.h>
 #include <scanner/scanner.h>
 #include <scanner/token_translation.h>
 #include <scanner/token_stringify.h>
+#include <scanner/parse_number.h>
 
 void scanner_init(scanner_t * scanner) {
     log_printf("Initializing scanner\n");
@@ -22,15 +24,6 @@ void scanner_free(scanner_t * scanner) {
     token_buffer_free(&scanner->tb);
 }
 
-static inline bool is_number_char(char c) {
-    return (
-        (c >= '0' && c <= '9') ||
-        c == '.'
-    );
-}
-static inline bool is_number_start_char(char c) {
-    return (c >= '0' && c <= '9') || c == '-';
-}
 static inline bool is_number_postfix_char(char c) {
     return (
         (c >= 'A' && c <= 'Z') ||
@@ -56,152 +49,8 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
             while (is_whitespace(buffer[position])) position++;
             if (position > 0) log_printf("Skipped %zu characters of whitespace\n", position);
 
-            if (is_number_start_char(buffer[position])) { // number
-                size_t old_position = position;
-                size_t number_start = 0;
-
-                bool negative;
-                if (buffer[position] == '-') {
-                    negative = true;
-                    position++;
-                    number_start++;
-                }
-                else negative = false;
-
-                // check for number format
-                int base;
-                if (buffer[position] == '0') {
-                    position++;
-                    number_start++;
-                    switch (buffer[position + 1]) {
-                        case 'x': {
-                            base = 16;
-                            position++;
-                            number_start++;
-                        }
-                            break;
-                        case 'b': {
-                            base = 2;
-                            position++;
-                            number_start++;
-                        }
-                            break;
-                        default: {
-                            base = 8;
-                        }
-                            break;
-                    }
-                }
-                else base = 10;
-
-                bool is_float = false;
-                size_t number_length;
-                for (number_length = 0; is_number_char(buffer[position + number_length]); number_length++) {
-                    if (buffer[position + number_length] == '.') is_float = true;
-                }
-
-                size_t number_postfix_length = 0;
-                while (is_number_postfix_char(buffer[position + number_length + number_postfix_length])) number_postfix_length++;
-
-                token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_CONSTANT);
-                token_data_constant_t * data = token->data;
-
-                token->file_name = line->metadata.file_name;
-                token->line = line_number;
-                token->position = old_position;
-
-                debug_printf("Number length: %u\n", number_length);
-
-                char * str_end;
-                if (is_float) {
-                    if (
-                        number_postfix_length == 1 &&
-                        buffer[position + number_length] == 'f'
-                        ) {
-                        data->type = SCANNER_CONSTANT_TYPE_FLOAT;
-                        data->f = strtof(&buffer[position], &str_end) * (negative ? -1.0f : 1.0f);
-                    }
-                    else {
-                        data->type = SCANNER_CONSTANT_TYPE_DOUBLE;
-                        data->d = strtod(&buffer[position], &str_end) * (negative ? -1.0 : 1.0);;
-                    }
-
-                    log_printf("Got number '%f' at position %zu\n", data->d, old_position);
-                }
-                else {
-                    if (negative) {
-                        data->type = SCANNER_CONSTANT_TYPE_SLL;
-                        data->s = strtoll(&buffer[position], &str_end, base);
-
-                        log_printf("Got number '%lli' at position %zu\n", data->s, old_position);
-                    }
-                    else {
-                        data->type = SCANNER_CONSTANT_TYPE_ULL;
-                        data->u = strtoull(&buffer[position], &str_end, base);
-
-                        log_printf("Got number '%llu' at position %zu\n", data->u, old_position);
-                    }
-                }
-
-                if (number_postfix_length != 0) {
-                    size_t clamped_postfix_length = number_postfix_length > 3 ? 3 : number_postfix_length;
-
-                    char postfix[4] = { '\0', '\0', '\0', '\0' };
-                    memcpy(postfix, &buffer[position + number_length - number_postfix_length], clamped_postfix_length);
-
-                    if (!is_float) {
-                        size_t long_count = 0;
-                        bool unsigned_present = false;
-
-                        for (size_t i = 0; i < clamped_postfix_length; i++) {
-                            if (postfix[i] == 'u' || postfix[i] == 'U') unsigned_present = true;
-                            else if (postfix[i] == 'l' || postfix[i] == 'L') long_count++;
-                            else {
-                                fatal_line_range_error(
-                                    line_buffer,
-                                    file_name,
-                                    "Encountered invalid numerical suffix character",
-                                    line_number,
-                                    old_position,
-                                    number_length + number_postfix_length
-                                );
-                            }
-                        }
-
-                        if ((long_count == 0 && !unsigned_present) || long_count > 2) {
-                            fatal_line_range_error(
-                                line_buffer,
-                                file_name,
-                                "Encountered invalid numerical suffix",
-                                line_number,
-                                old_position,
-                                number_length + number_postfix_length
-                            );
-                        }
-
-                        if (unsigned_present) {
-                            switch (long_count) {
-                                case 0: {
-                                    data->type = SCANNER_CONSTANT_TYPE_UI;
-                                }
-                                    break;
-                                case 1: {
-                                    data->type = SCANNER_CONSTANT_TYPE_UL;
-                                }
-                                    break;
-                                case 2: {
-                                    data->type = SCANNER_CONSTANT_TYPE_ULL;
-                                }
-                                    break;
-
-                                default:
-                                    break;
-                            }
-                        }
-                    }
-                }
-
-                position += number_start + number_length + number_postfix_length;
+            if (is_number_char(buffer[position])) { // number
+                position = scanner_parse_number(&scanner->tb, file_name, line_buffer, line_number, position, NULL);
 
                 continue;
             }
@@ -267,7 +116,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                         token->position = position;
 
                         data->type = SCANNER_CONSTANT_TYPE_SC;
-                        data->s = (long long) escape_result;
+                        data->i = (unsigned long long) escape_result;
 
                         position += 3 + escape_size;
 
@@ -304,7 +153,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                 token->position = position;
 
                 data->type = SCANNER_CONSTANT_TYPE_SC;
-                data->s = (long long) buffer[position + 1];
+                data->i = (unsigned long long) buffer[position + 1];
 
                 position += 3;
 

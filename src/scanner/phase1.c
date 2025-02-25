@@ -153,21 +153,18 @@ void scanner_print_phase1(scanner_t * scanner) {
 
                     case SCANNER_CONSTANT_TYPE_UC:
                     case SCANNER_CONSTANT_TYPE_SC:
-                        printf("%zu Text '%c'\n", phase1_constants[constant->type], (char) constant->s);
+                        printf("%zu Text '%c'\n", phase1_constants[constant->type], (char) constant->i);
                         break;
 
                     case SCANNER_CONSTANT_TYPE_US:
                     case SCANNER_CONSTANT_TYPE_UI:
                     case SCANNER_CONSTANT_TYPE_UL:
                     case SCANNER_CONSTANT_TYPE_ULL:
-                        printf("%zu Text %llu\n", phase1_constants[constant->type], constant->u);
-                        break;
-
                     case SCANNER_CONSTANT_TYPE_SS:
                     case SCANNER_CONSTANT_TYPE_SI:
                     case SCANNER_CONSTANT_TYPE_SL:
                     case SCANNER_CONSTANT_TYPE_SLL:
-                        printf("%zu Text %lld\n", phase1_constants[constant->type], constant->s);
+                        printf("%zu Text %llu\n", phase1_constants[constant->type], constant->i);
                         break;
                 }
             } break;

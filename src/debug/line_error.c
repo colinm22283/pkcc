@@ -9,7 +9,7 @@ __NORETURN void fatal_line_range_error(line_buffer_t * line_buffer, file_name_en
     if (options.color_enable) fprintf(stderr, OUTPUT_COLOR_ERROR "ERROR:\n");
     else fprintf(stderr, "ERROR:\n");
 
-    fprintf(stderr, "%s: %s on line %zu at position %zu\n\n", file_name->absolute_path, message, line + 1, position + 1);
+    fprintf(stderr, "%s: %s on line %zu at position %zu\n", file_name->absolute_path, message, line + 1, position + 1);
 
     if (line != 0) fprintf(stderr, "%5zu: %s\n", line_buffer->lines[line - 1].metadata.source_line + 1, line_buffer->lines[line - 1].line);
     if (options.color_enable) {

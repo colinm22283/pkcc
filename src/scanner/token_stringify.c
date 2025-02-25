@@ -141,16 +141,13 @@ void token_stringify(char * buffer, token_t * token) {
                 case SCANNER_CONSTANT_TYPE_UL:
                 case SCANNER_CONSTANT_TYPE_UI:
                 case SCANNER_CONSTANT_TYPE_US:
-                case SCANNER_CONSTANT_TYPE_UC: {
-                    sprintf(end, "(%llu)", data->u);
-                } break;
-
+                case SCANNER_CONSTANT_TYPE_UC:
                 case SCANNER_CONSTANT_TYPE_SLL:
                 case SCANNER_CONSTANT_TYPE_SL:
                 case SCANNER_CONSTANT_TYPE_SI:
                 case SCANNER_CONSTANT_TYPE_SS:
                 case SCANNER_CONSTANT_TYPE_SC: {
-                    sprintf(end, "(%lli)", data->s);
+                    sprintf(end, "(%llu)", data->i);
                 } break;
 
                 case SCANNER_CONSTANT_TYPE_FLOAT: {

@@ -82,8 +82,7 @@ typedef enum {
 typedef struct {
     token_data_constant_type_t type;
     union {
-        unsigned long long u;
-        signed long long s;
+        unsigned long long i;
         float f;
         double d;
     };

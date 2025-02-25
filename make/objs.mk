@@ -24,3 +24,4 @@ OBJS+=$(OBJ_DIR)/scanner/token_buffer.o
 OBJS+=$(OBJ_DIR)/scanner/token_translation.o
 OBJS+=$(OBJ_DIR)/scanner/token_stringify.o
 OBJS+=$(OBJ_DIR)/scanner/phase1.o
+OBJS+=$(OBJ_DIR)/scanner/parse_number.o
