@@ -7,6 +7,7 @@
 #include <parsing/is_symbol_char.h>
 #include <scanner/parse_number.h>
 #include <debug/line_error.h>
+#include <debug/log.h>
 
 static inline uint8_t digit_to_number(char c) {
     if (c <= '9') return c - '0';
@@ -21,6 +22,8 @@ size_t scanner_parse_number(
     size_t position,
     token_t ** token_out
 ) {
+    log_printf("Parsing numerical constant\n");
+
     line_buffer_line_t * line = &line_buffer->lines[line_number];
 
     const char * data = line->line;
@@ -33,6 +36,9 @@ size_t scanner_parse_number(
         do if (data[i] == '.') is_integer = false;
         while(is_number_char(data[i++]));
     }
+
+    if (is_integer) log_printf("Number is an integer\n");
+    else log_printf("Number is real\n");
 
     if (is_integer) {
         enum {
@@ -66,8 +72,19 @@ size_t scanner_parse_number(
         }
         else radix = DECIMAL;
 
+        switch (radix) {
+            case BINARY: log_printf("Number is binary\n"); break;
+            case OCTAL: log_printf("Number is octal\n"); break;
+            case DECIMAL: log_printf("Number is decimal\n"); break;
+            case HEXADECIMAL: log_printf("Number is hexadecimal\n"); break;
+        }
+
+        log_printf("TEST: %s\n", &data[position]);
+
         size_t number_length = 0;
         while (is_number_char(data[position + number_length])) number_length++;
+
+        log_printf("Number length is %zu\n", number_length);
 
         unsigned long long accumulator = 0;
         unsigned long long radix_value;
@@ -85,6 +102,8 @@ size_t scanner_parse_number(
 
             multiplier *= radix_value;
         }
+
+        log_printf("Read number %llu\n", accumulator);
 
         position += number_length;
 

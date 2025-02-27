@@ -19,6 +19,8 @@ typedef struct {
     const char ** include_directories;
 
     size_t max_preprocessor_depth;
+
+    size_t max_string_length;
 } options_t;
 
 extern options_t options;

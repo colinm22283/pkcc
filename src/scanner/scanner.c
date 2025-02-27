@@ -7,6 +7,7 @@
 #include <parsing/is_number_char.h>
 #include <debug/log.h>
 #include <debug/line_error.h>
+#include <debug/line_warning.h>
 #include <scanner/scanner.h>
 #include <scanner/token_translation.h>
 #include <scanner/token_stringify.h>
@@ -44,13 +45,18 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
         const char * buffer = line->line;
 
         while (buffer[position] != '\0') {
-            log_printf("Parsing line '%s'\n", buffer);
+            log_printf("Parsing section '%s'\n", &buffer[position]);
 
-            while (is_whitespace(buffer[position])) position++;
-            if (position > 0) log_printf("Skipped %zu characters of whitespace\n", position);
+            {
+                size_t whitespace_skip = 0;
+                while (is_whitespace(buffer[position + whitespace_skip])) whitespace_skip++;
+                if (whitespace_skip > 0) log_printf("Skipped %zu character(s) of whitespace\n", whitespace_skip);
+
+                position += whitespace_skip;
+            }
 
             if (is_number_char(buffer[position])) { // number
-                position = scanner_parse_number(&scanner->tb, file_name, line_buffer, line_number, position, NULL);
+                position = scanner_parse_number(&scanner->tb, file_name, line_buffer, line_index, position, NULL);
 
                 continue;
             }
@@ -76,7 +82,16 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
 
                 log_printf("Got string '%s' at position %zu\n", data->content, position);
 
-                // TODO: warn excess string length
+                if (options.max_string_length != 0 && string_size > options.max_string_length) {
+                    line_range_warning(
+                        line_buffer,
+                        file_name,
+                        "Excess string length (see -fmax-string-literal-length)",
+                        line_index,
+                        position,
+                        string_size + 2
+                    );
+                }
 
                 position += string_size + 2;
 
@@ -88,7 +103,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                         line_buffer,
                         file_name,
                         "Encountered empty character literal",
-                        line_number,
+                        line_index,
                         position
                     );
                 }
@@ -103,7 +118,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                                 line_buffer,
                                 file_name,
                                 "Encountered empty character literal",
-                                line_number,
+                                line_index,
                                 position
                             );
                         }
@@ -129,7 +144,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                             line_buffer,
                             file_name,
                             "Encountered invalid character literal",
-                            line_number,
+                            line_index,
                             position
                         );
                     }
@@ -140,7 +155,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                         line_buffer,
                         file_name,
                         "Encountered invalid character literal",
-                        line_number,
+                        line_index,
                         position
                     );
                 }
@@ -248,7 +263,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                 line_buffer,
                 file_name,
                 "Encountered unknown token",
-                line_number,
+                line_index,
                 position
             );
         }

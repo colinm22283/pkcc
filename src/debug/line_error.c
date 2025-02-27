@@ -24,8 +24,9 @@ __NORETURN void fatal_line_range_error(line_buffer_t * line_buffer, file_name_en
     }
     else {
         fprintf(stderr, "%5zu: %s\n", line_buffer->lines[line].metadata.source_line + 1, line_buffer->lines[line].line);
-        fprintf(stderr, "%*c", (int) position, ' ');
+        fprintf(stderr, "%*c", (int) position + 7, ' ');
         for (size_t i = 0; i < size; i++) fputc('^', stderr);
+        fputc('\n', stderr);
     }
     if (line != line_buffer->size - 1) fprintf(stderr, "%5zu: %s\n", line_buffer->lines[line + 1].metadata.source_line + 1, line_buffer->lines[line + 1].line);
 

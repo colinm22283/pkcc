@@ -21,6 +21,8 @@ options_t options = {
     .output_path = NULL,
 
     .max_preprocessor_depth = 200,
+
+    .max_string_length = 1024,
 };
 
 void options_parse_cli(int argc, const char ** argv) {
@@ -88,7 +90,7 @@ void options_parse_cli(int argc, const char ** argv) {
                         equal_pos = -1;
                         break;
                     }
-                    else if (!is_symbol_char(data[equal_pos])) fatal_error("Invalid -f switch\nFormat -f<variable_name>[=<value>]\n");
+                    else if (!is_symbol_char(data[equal_pos]) && data[equal_pos] != '-') fatal_error("Invalid -f switch\nFormat -f<variable_name>[=<value>]\n");
 
                     equal_pos++;
                 }
@@ -100,6 +102,14 @@ void options_parse_cli(int argc, const char ** argv) {
 
                         if (!(data[equal_pos + 1] != '\0' && *end_ptr == '\0')) {
                             fatal_error("Invalid -fmax-include-depth switch\nInvalid variable value\n");
+                        }
+                    }
+                    else if (strncmp(data, "max-string-literal-length=", 26) == 0) {
+                        char * end_ptr;
+                        options.max_string_length = strtoull(&data[equal_pos + 1], &end_ptr, 10);
+
+                        if (!(data[equal_pos + 1] != '\0' && *end_ptr == '\0')) {
+                            fatal_error("Invalid -fmax-string-literal-length switch\nInvalid variable value\n");
                         }
                     }
                     else {
