@@ -20,6 +20,9 @@ typedef struct {
 
     size_t max_preprocessor_depth;
 
+    size_t max_integer_length;
+    size_t max_real_length;
+    size_t max_identifier_length;
     size_t max_string_length;
 } options_t;
 

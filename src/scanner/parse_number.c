@@ -8,6 +8,7 @@
 #include <scanner/parse_number.h>
 #include <debug/line_error.h>
 #include <debug/log.h>
+#include <debug/line_warning.h>
 
 static inline uint8_t digit_to_number(char c) {
     if (c <= '9') return c - '0';
@@ -19,9 +20,12 @@ size_t scanner_parse_number(
     file_name_entry_t * file_name,
     line_buffer_t * line_buffer,
     size_t line_number,
+    size_t source_line_number,
     size_t position,
     token_t ** token_out
 ) {
+    size_t start_position = position;
+
     log_printf("Parsing numerical constant\n");
 
     line_buffer_line_t * line = &line_buffer->lines[line_number];
@@ -79,8 +83,6 @@ size_t scanner_parse_number(
             case HEXADECIMAL: log_printf("Number is hexadecimal\n"); break;
         }
 
-        log_printf("TEST: %s\n", &data[position]);
-
         size_t number_length = 0;
         while (is_number_char(data[position + number_length])) number_length++;
 
@@ -112,8 +114,8 @@ size_t scanner_parse_number(
 
         size_t l_count = 0, u_count = 0;
         for (size_t i = 0; i < postfix_length; i++) {
-            if (case_insensitive_compare(data[position + postfix_length], 'u')) u_count++;
-            else if (case_insensitive_compare(data[position + postfix_length], 'l')) l_count++;
+            if (case_insensitive_compare(data[position + i], 'u')) u_count++;
+            else if (case_insensitive_compare(data[position + i], 'l')) l_count++;
         }
 
         if (l_count > 2) {
@@ -141,10 +143,13 @@ size_t scanner_parse_number(
         token_data_constant_t * constant = (token_data_constant_t *) token->data;
 
         token->file_name = line->metadata.file_name;
-        token->line = line_number;
+        token->line = source_line_number;
         token->position = position;
 
         constant->i = accumulator;
+
+        log_printf("L count = %zu\n", l_count);
+        log_printf("U count = %zu\n", u_count);
 
         if (u_count == 0) {
             switch (l_count) {
@@ -166,6 +171,19 @@ size_t scanner_parse_number(
         }
 
         if (token_out != NULL) *token_out = token;
+
+        position += postfix_length;
+
+        if (position - start_position > options.max_integer_length) {
+            line_range_warning(
+                line_buffer,
+                file_name,
+                "Excess integer length (see -fmax-integer-literal-length)",
+                line_number,
+                start_position,
+                position - start_position
+            );
+        }
 
         return position;
     }
@@ -194,7 +212,7 @@ size_t scanner_parse_number(
         token_data_constant_t * constant = (token_data_constant_t *) token->data;
 
         token->file_name = line->metadata.file_name;
-        token->line = line_number;
+        token->line = source_line_number;
         token->position = position;
 
         char * end_ptr;
@@ -219,6 +237,19 @@ size_t scanner_parse_number(
             );
         }
 
-        return position + (intptr_t) end_ptr - (intptr_t) &data[position] + (is_double ? 0 : 1);
+        position += (intptr_t) end_ptr - (intptr_t) &data[position] + (is_double ? 0 : 1);
+
+        if (position - start_position > options.max_integer_length) {
+            line_range_warning(
+                line_buffer,
+                file_name,
+                "Excess real length (see -fmax-real-constant-length)",
+                line_number,
+                start_position,
+                position - start_position
+            );
+        }
+
+        return position;
     }
 }

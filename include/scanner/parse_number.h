@@ -9,6 +9,7 @@ size_t scanner_parse_number(
     file_name_entry_t * file_name,
     line_buffer_t * line_buffer,
     size_t line_number,
+    size_t source_line_number,
     size_t position,
     token_t ** token
 );

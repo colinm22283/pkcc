@@ -22,6 +22,9 @@ options_t options = {
 
     .max_preprocessor_depth = 200,
 
+    .max_integer_length = 48,
+    .max_real_length = 48,
+    .max_identifier_length = 48,
     .max_string_length = 1024,
 };
 
@@ -101,7 +104,31 @@ void options_parse_cli(int argc, const char ** argv) {
                         options.max_preprocessor_depth = strtoull(&data[equal_pos + 1], &end_ptr, 10);
 
                         if (!(data[equal_pos + 1] != '\0' && *end_ptr == '\0')) {
-                            fatal_error("Invalid -fmax-include-depth switch\nInvalid variable value\n");
+                            fatal_error("Invalid -f switch variable value\n");
+                        }
+                    }
+                    else if (strncmp(data, "max-integer-literal-length=", 27) == 0) {
+                        char * end_ptr;
+                        options.max_integer_length = strtoull(&data[equal_pos + 1], &end_ptr, 10);
+
+                        if (!(data[equal_pos + 1] != '\0' && *end_ptr == '\0')) {
+                            fatal_error("Invalid -f switch variable value\n");
+                        }
+                    }
+                    else if (strncmp(data, "max-real-constant-length=", 25) == 0) {
+                        char * end_ptr;
+                        options.max_real_length = strtoull(&data[equal_pos + 1], &end_ptr, 10);
+
+                        if (!(data[equal_pos + 1] != '\0' && *end_ptr == '\0')) {
+                            fatal_error("Invalid -f switch variable value\n");
+                        }
+                    }
+                    else if (strncmp(data, "max-identifier-length=", 22) == 0) {
+                        char * end_ptr;
+                        options.max_identifier_length = strtoull(&data[equal_pos + 1], &end_ptr, 10);
+
+                        if (!(data[equal_pos + 1] != '\0' && *end_ptr == '\0')) {
+                            fatal_error("Invalid -f switch variable value\n");
                         }
                     }
                     else if (strncmp(data, "max-string-literal-length=", 26) == 0) {
@@ -109,7 +136,7 @@ void options_parse_cli(int argc, const char ** argv) {
                         options.max_string_length = strtoull(&data[equal_pos + 1], &end_ptr, 10);
 
                         if (!(data[equal_pos + 1] != '\0' && *end_ptr == '\0')) {
-                            fatal_error("Invalid -fmax-string-literal-length switch\nInvalid variable value\n");
+                            fatal_error("Invalid -f switch variable value\n");
                         }
                     }
                     else {

@@ -56,7 +56,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
             }
 
             if (is_number_char(buffer[position])) { // number
-                position = scanner_parse_number(&scanner->tb, file_name, line_buffer, line_index, position, NULL);
+                position = scanner_parse_number(&scanner->tb, file_name, line_buffer, line_index, line_number, position, NULL);
 
                 continue;
             }
