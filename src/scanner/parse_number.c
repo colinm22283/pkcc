@@ -174,7 +174,7 @@ size_t scanner_parse_number(
 
         position += postfix_length;
 
-        if (position - start_position > options.max_integer_length) {
+        if (options.max_integer_length != 0 && position - start_position > options.max_integer_length) {
             line_range_warning(
                 line_buffer,
                 file_name,
@@ -239,7 +239,7 @@ size_t scanner_parse_number(
 
         position += (intptr_t) end_ptr - (intptr_t) &data[position] + (is_double ? 0 : 1);
 
-        if (position - start_position > options.max_integer_length) {
+        if (options.max_real_length != 0 && position - start_position > options.max_real_length) {
             line_range_warning(
                 line_buffer,
                 file_name,

@@ -233,6 +233,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
 
                 // identifier
                 {
+                    size_t identifier_start = position;
                     size_t identifier_size = 0;
 
                     while (is_symbol_char(buffer[position + identifier_size])) identifier_size++;
@@ -254,8 +255,20 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
 
                         position += identifier_size;
 
+                        if (options.max_identifier_length != 0 && identifier_size > options.max_identifier_length) {
+                            line_range_warning(
+                                line_buffer,
+                                file_name,
+                                "Excess identifier length (see -fmax-identifier-length)",
+                                line_index,
+                                identifier_start,
+                                identifier_size
+                            );
+                        }
+
                         continue;
                     }
+
                 }
             }
 
