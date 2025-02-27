@@ -152,16 +152,20 @@ size_t scanner_parse_number(
     }
     else {
         size_t number_length = 0;
-        while (is_number_char(data[position + number_length]) || data[position + number_length] == '.') number_length++;
+        while (
+            is_number_char(data[position + number_length]) ||
+            data[position + number_length] == '.' ||
+            case_insensitive_compare(data[position + number_length], 'e')
+        ) number_length++;
 
         bool is_double = true;
 
         if (data[position + number_length] == 'f') is_double = false;
-        else if (is_symbol_char(data[position + number_length])) {
+        else if (!case_insensitive_compare(data[position + number_length], 'e') && is_symbol_char(data[position + number_length])) {
             fatal_line_error(
                 line_buffer,
                 file_name,
-                "Invalid real constant point postfix",
+                "Invalid real constant postfix",
                 line_number,
                 position + number_length
             );

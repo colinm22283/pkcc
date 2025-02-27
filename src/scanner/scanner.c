@@ -76,6 +76,8 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
 
                 log_printf("Got string '%s' at position %zu\n", data->content, position);
 
+                // TODO: warn excess string length
+
                 position += string_size + 2;
 
                 continue;

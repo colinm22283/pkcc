@@ -11,7 +11,7 @@ typedef struct file_name_entry_s {
 } file_name_entry_t;
 
 typedef struct {
-    file_name_entry_t * head;
+    file_name_entry_t head;
     file_name_entry_t tail;
 } file_name_registry_t;
 
