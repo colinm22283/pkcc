@@ -164,7 +164,7 @@ void options_parse_cli(int argc, const char ** argv) {
         else {
             if (options.input_path != NULL) {
                 fatal_error(
-                    "Multiple input files were provided (eg. '%s' & '%s')\n",
+                    "Multiple input files were provided ('%s' & '%s')\n",
                     options.input_path,
                     argv[i]
                 );

@@ -73,7 +73,11 @@ int main(int argc, const char ** argv) {
     }
 
     if (options.phase1) {
-        scanner_print_phase1(&scanner);
+        scanner_print_phase1(stdout, &scanner);
+
+        FILE * out_file = fopen(options.output_path, "w");
+        scanner_print_phase1(out_file, &scanner);
+        fclose(out_file);
 
         exit_and_free(0);
     }

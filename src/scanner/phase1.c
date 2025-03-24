@@ -120,23 +120,23 @@ size_t phase1_punctuation[] = {
 #define SCANNER_STRINGIFY_PHASE1_REQUIRED_LENGTH (1024)
 const char * scanner_stringify_phase1(token_t * token);
 
-void scanner_print_phase1(scanner_t * scanner) {
+void scanner_print_phase1(FILE * out_stream, scanner_t * scanner) {
     for (size_t i = 0; i < scanner->tb.token_count; i++) {
         token_t * token = &scanner->tb.tokens[i];
 
-        printf("File '%s' Line %zu Token ", token->file_name->absolute_path, token->line + 1);
+        fprintf(out_stream, "File '%s' Line %zu Token ", token->file_name->absolute_path, token->line + 1);
 
         switch (token->type) {
             case TOKEN_TYPE_IDENTIFIER: {
                 token_data_identifier_t * identifier = (token_data_identifier_t *) token->data;
 
-                printf("306 Text %s\n", identifier->name);
+                fprintf(out_stream, "306 Text %s\n", identifier->name);
             } break;
 
             case TOKEN_TYPE_KEYWORD: {
                 token_data_keyword_t * keyword = (token_data_keyword_t *) token->data;
 
-                printf("%zu Text %s\n", phase1_keywords[keyword->keyword], scanner_stringify_phase1(token));
+                fprintf(out_stream, "%zu Text %s\n", phase1_keywords[keyword->keyword], scanner_stringify_phase1(token));
             } break;
 
             case TOKEN_TYPE_CONSTANT: {
@@ -144,16 +144,16 @@ void scanner_print_phase1(scanner_t * scanner) {
 
                 switch (constant->type) {
                     case SCANNER_CONSTANT_TYPE_FLOAT:
-                        printf("%zu Text %f\n", phase1_constants[constant->type], constant->f);
+                        fprintf(out_stream, "%zu Text %f\n", phase1_constants[constant->type], constant->f);
                         break;
 
                     case SCANNER_CONSTANT_TYPE_DOUBLE:
-                        printf("%zu Text %f\n", phase1_constants[constant->type], constant->d);
+                        fprintf(out_stream, "%zu Text %f\n", phase1_constants[constant->type], constant->d);
                         break;
 
                     case SCANNER_CONSTANT_TYPE_UC:
                     case SCANNER_CONSTANT_TYPE_SC:
-                        printf("%zu Text '%c'\n", phase1_constants[constant->type], (char) constant->i);
+                        fprintf(out_stream, "%zu Text '%c'\n", phase1_constants[constant->type], (char) constant->i);
                         break;
 
                     case SCANNER_CONSTANT_TYPE_US:
@@ -164,7 +164,7 @@ void scanner_print_phase1(scanner_t * scanner) {
                     case SCANNER_CONSTANT_TYPE_SI:
                     case SCANNER_CONSTANT_TYPE_SL:
                     case SCANNER_CONSTANT_TYPE_SLL:
-                        printf("%zu Text %llu\n", phase1_constants[constant->type], constant->i);
+                        fprintf(out_stream, "%zu Text %llu\n", phase1_constants[constant->type], constant->i);
                         break;
                 }
             } break;
@@ -172,13 +172,13 @@ void scanner_print_phase1(scanner_t * scanner) {
             case TOKEN_TYPE_PUNCTUATION: {
                 token_data_punctuation_t * punctuation = (token_data_punctuation_t *) token->data;
 
-                printf("%zu Text %s\n", phase1_punctuation[punctuation->type], scanner_stringify_phase1(token));
+                fprintf(out_stream, "%zu Text %s\n", phase1_punctuation[punctuation->type], scanner_stringify_phase1(token));
             } break;
 
             case TOKEN_TYPE_STRING_LITERAL: {
                 token_data_string_literal_t * string_literal = (token_data_string_literal_t *) token->data;
 
-                printf("305 Text \"%s\"\n", string_literal->content);
+                fprintf(out_stream, "305 Text \"%s\"\n", string_literal->content);
             } break;
         }
     }

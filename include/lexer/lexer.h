@@ -1,8 +1,6 @@
-//
-// Created by colin on 1/25/25.
-//
+#pragma once
 
-#ifndef PKCC_LEXER_H
-#define PKCC_LEXER_H
+typedef struct {
 
-#endif //PKCC_LEXER_H
+} lexer_t;
+
