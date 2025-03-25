@@ -186,6 +186,8 @@ void preprocessor_parse(preprocessor_t * preprocessor, const char * input_data) 
                 for (size_t i = 0; i < sub_preprocessor.tbuf.size; i++) {
                     preprocessor_token_t * new_token = preprocessor_token_buffer_push(&preprocessor->tbuf);
 
+                    if (sub_preprocessor.tbuf.tokens[i].file_name == NULL) fatal_error("oh dear\n");
+
                     preprocessor_token_buffer_token_clone(new_token, &sub_preprocessor.tbuf.tokens[i]);
                 }
 
@@ -354,7 +356,7 @@ void preprocessor_render(preprocessor_t * preprocessor, line_buffer_t * line_buf
                 else {
                     log_printf("Rendering symbol of length %zu with %zu arguments\n", symbol->size, symbol->arg_count);
 
-                    if (line_size + symbol->size > line_capacity) {
+                    while (line_size + symbol->size > line_capacity) {
                         while (line_size + symbol->size > line_capacity) line_capacity *= 2;
 
                         line = pkcc_realloc(line, line_capacity);

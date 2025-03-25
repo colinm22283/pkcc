@@ -1,9 +1,16 @@
 include $(TEST_INCLUDE)
 
+ARGUMENTS=-dd $(TEST_DIR)/test.c -o $(TEST_DIR)/test.s
+COMMAND=$(PKCC) $(ARGUMENTS)
+
+FILES=test.c
+
+FILES_EXPANDED=$(foreach f, $(FILES), $(TEST_DIR)/$f)
+
 .PHONY: run
-run: $(TEST_DIR)/test.c
-	$(PKCC) -dd $(TEST_DIR)/test.c -o $(TEST_DIR)/test.s
+run: $(FILES_EXPANDED)
+	$(COMMAND)
 
 .PHONY: valgrind
-valgrind: $(TEST_DIR)/test.c
-	$(VALGRIND) $(PKCC) -dd $(TEST_DIR)/test.c -o $(TEST_DIR)/test.s
+valgrind: $(FILES_EXPANDED)
+	$(VALGRIND) $(COMMAND)

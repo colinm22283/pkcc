@@ -16,14 +16,19 @@
 #include <scanner/scanner.h>
 #include <scanner/phase1.h>
 
+#include <lexer/lexer.h>
+#include <lexer/rule_registry.h>
+
 free_list_t free_list;
 
 int main(int argc, const char ** argv) {
+    log_printf("PKCC Compiler\n");
+
     free_list_init(&free_list);
 
     options_parse_cli(argc, argv);
 
-    log_printf("PKCC Compiler\n");
+    rule_registry_init();
 
     if (options.input_path == NULL) fatal_error("No input path specified\n" USAGE_STRING, argv[0]);
     if (options.output_path == NULL) fatal_error("No output path specified\n" USAGE_STRING, argv[0]);
@@ -81,6 +86,12 @@ int main(int argc, const char ** argv) {
 
         exit_and_free(0);
     }
+
+    lexer_t lexer;
+    lexer_init(&lexer, &scanner);
+    __MAYBE_UNUSED free_list_node_t * lexer_node = free_list_push(&free_list, &lexer, (void (*)(void *)) lexer_free);
+
+    lexer_run(&lexer);
 
     exit_and_free(0);
 }

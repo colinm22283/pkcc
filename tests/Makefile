@@ -7,6 +7,10 @@ VALGRIND_TARGETS=$(foreach t, $(TEST_DIRS:/=), valgrind-$t)
 test-%:
 	cd $* && PKCC=$(PKCC) TEST_DIR=$(TEST_BUILD_DIR)/$* TEST_FILES_DIR=$(CURDIR)/$*/files TEST_INCLUDE=$(CURDIR)/test.mk $(MAKE) run
 
+.PHONY: gdb-%
+gdb-%:
+	cd $* && PKCC=$(PKCC) TEST_DIR=$(TEST_BUILD_DIR)/$* TEST_FILES_DIR=$(CURDIR)/$*/files TEST_INCLUDE=$(CURDIR)/test.mk $(MAKE) gdb
+
 .PHONY: valgrind-%
 valgrind-%:
 	cd $* && PKCC=$(PKCC) TEST_DIR=$(TEST_BUILD_DIR)/$* TEST_FILES_DIR=$(CURDIR)/$*/files TEST_INCLUDE=$(CURDIR)/test.mk $(MAKE) valgrind

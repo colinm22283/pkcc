@@ -25,3 +25,8 @@ OBJS+=$(OBJ_DIR)/scanner/token_translation.o
 OBJS+=$(OBJ_DIR)/scanner/token_stringify.o
 OBJS+=$(OBJ_DIR)/scanner/phase1.o
 OBJS+=$(OBJ_DIR)/scanner/parse_number.o
+
+OBJS+=$(OBJ_DIR)/lexer/lexer.o
+OBJS+=$(OBJ_DIR)/lexer/syntax_tree.o
+OBJS+=$(OBJ_DIR)/lexer/rule_registry.o
+OBJS+=$(OBJ_DIR)/lexer/rules.o

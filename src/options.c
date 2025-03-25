@@ -14,6 +14,7 @@ options_t options = {
     .color_enable = true,
 
     .phase1 = false,
+    .phase2 = false,
 
     .preprocess_only = false,
 
@@ -83,6 +84,9 @@ void options_parse_cli(int argc, const char ** argv) {
             }
             else if (strcmp(argv[i] + 1, "1") == 0) {
                 options.phase1 = true;
+            }
+            else if (strcmp(argv[i] + 1, "2") == 0) {
+                options.phase2 = true;
             }
             else if (argv[i][1] == 'f') {
                 const char * data = &argv[i][2];

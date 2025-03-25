@@ -1,9 +1,9 @@
 #include <alloc.h>
 #include <preprocessor/preprocessor_token_buffer.h>
 
-#define PREPROCESSOR_TOKEN_BUFFER_INITIAL_SIZE (256)
+#define PREPROCESSOR_TOKEN_BUFFER_INITIAL_SIZE (4096)
 
-void preprocessor_token_buffer_init(preprocessor_token_buffer_t * buffer) {
+void preprocessor_token_buffer_init(preprocessor_token_buffer_t * buffer) { // TODO this is bad
     buffer->size = 0;
     buffer->capacity = PREPROCESSOR_TOKEN_BUFFER_INITIAL_SIZE;
 

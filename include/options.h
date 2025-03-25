@@ -9,6 +9,7 @@ typedef struct {
     bool color_enable;
 
     bool phase1;
+    bool phase2;
 
     bool preprocess_only;
 
