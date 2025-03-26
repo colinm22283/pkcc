@@ -117,9 +117,6 @@ size_t phase1_punctuation[] = {
     [SCANNER_PUNCTUATION_TYPE_COMMA] = 44,
 };
 
-#define SCANNER_STRINGIFY_PHASE1_REQUIRED_LENGTH (1024)
-const char * scanner_stringify_phase1(token_t * token);
-
 void scanner_print_phase1(FILE * out_stream, scanner_t * scanner) {
     for (size_t i = 0; i < scanner->tb.token_count; i++) {
         token_t * token = &scanner->tb.tokens[i];

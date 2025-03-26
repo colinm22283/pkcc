@@ -1,0 +1,1 @@
+void display(const struct window W[], int n);

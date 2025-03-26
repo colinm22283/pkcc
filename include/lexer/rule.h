@@ -2,7 +2,7 @@
 
 #include <stddef.h>
 
-#include <scanner/token.h>
+#include <scanner/token_number.h>
 
 typedef enum {
     RT_TERMINAL,
