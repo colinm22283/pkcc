@@ -17,6 +17,7 @@ options_t options = {
     .phase2 = false,
 
     .preprocess_only = false,
+    .dump_tree = false,
 
     .input_path = NULL,
     .output_path = NULL,
@@ -150,6 +151,9 @@ void options_parse_cli(int argc, const char ** argv) {
                 else {
                     if (strncmp(data, "no-diagnostics-color", 20) == 0) {
                         options.color_enable = false;
+                    }
+                    else if (strncmp(data, "dump-tree", 9) == 0) {
+                        options.dump_tree = true;
                     }
                     else {
                         fatal_error("Invalid -f switch\nInvalid variable name\n");

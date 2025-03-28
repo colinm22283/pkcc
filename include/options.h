@@ -12,6 +12,7 @@ typedef struct {
     bool phase2;
 
     bool preprocess_only;
+    bool dump_tree;
 
     const char * input_path;
     const char * output_path;

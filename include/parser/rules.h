@@ -1,6 +1,6 @@
 #pragma once
 
-#include <lexer/rule.h>
+#include <parser/rule.h>
 
 #define RULE_COUNT (157)
 
@@ -90,6 +90,7 @@ static inline const char * rules_nonterminal_name(nonterminal_t nonterminal) {
         case NT_DECL: return "NT_DECL";
 
         case NT_DECL_VAR: return "NT_DECL_VAR";
+        case NT_DECL_VAR_NAME_LIST: return "NT_DECL_VAR_NAME_LIST";
         case NT_DECL_VAR_LIST: return "NT_DECL_VAR_LIST";
         case NT_DECL_VAR_DECL: return "NT_DECL_VAR_DECL";
         case NT_DECL_VAR_DECL_EQUAL: return "NT_DECL_VAR_DECL_EQUAL";

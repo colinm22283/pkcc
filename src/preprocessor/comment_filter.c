@@ -78,6 +78,8 @@ void preprocessor_comment_filter_parse(preprocessor_comment_filter_t * cf, const
 
                     position++;
                 }
+
+                push_char(cf, '\n');
             }
             else if (input[position + 1] == '/') {
                 position += 2;

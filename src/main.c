@@ -16,8 +16,9 @@
 #include <scanner/scanner.h>
 #include <scanner/phase1.h>
 
-#include <lexer/lexer.h>
-#include <lexer/rule_registry.h>
+#include <parser/parser.h>
+#include <parser/rule_registry.h>
+#include <parser/phase2.h>
 
 free_list_t free_list;
 
@@ -87,11 +88,23 @@ int main(int argc, const char ** argv) {
         exit_and_free(0);
     }
 
-    lexer_t lexer;
-    lexer_init(&lexer, &scanner);
-    __MAYBE_UNUSED free_list_node_t * lexer_node = free_list_push(&free_list, &lexer, (void (*)(void *)) lexer_free);
+    parser_t parser;
+    parser_init(&parser, &scanner);
+    __MAYBE_UNUSED free_list_node_t * lexer_node = free_list_push(&free_list, &parser, (void (*)(void *)) parser_free);
 
-    lexer_run(&lexer);
+    parser_run(&parser);
+
+    if (options.dump_tree) syntax_tree_print(&parser.syntax_tree);
+
+    if (options.phase2) {
+        parser_print_phase2(stdout, &parser);
+
+        FILE * out_file = fopen(options.output_path, "w");
+        parser_print_phase2(out_file, &parser);
+        fclose(out_file);
+
+        exit_and_free(0);
+    }
 
     exit_and_free(0);
 }

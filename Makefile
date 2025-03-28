@@ -20,6 +20,7 @@ export OBJS=
 include $(MAKE_DIR)/objs.mk
 include $(MAKE_DIR)/targets.mk
 include $(MAKE_DIR)/tests.mk
+include $(MAKE_DIR)/linecount.mk
 
 $(BUILD_DIR)/pkcc: $(OBJS)
 	mkdir -p $(@D)

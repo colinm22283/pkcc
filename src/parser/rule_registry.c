@@ -1,6 +1,6 @@
-#include <lexer/rule_registry.h>
+#include <parser/rule_registry.h>
 
-#include <lexer/rules.h>
+#include <parser/rules.h>
 
 #include <alloc.h>
 

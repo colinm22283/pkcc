@@ -4,26 +4,30 @@
 
 #include <scanner/token_stringify.h>
 
-#include <lexer/syntax_tree.h>
-#include <lexer/rule_registry.h>
-#include <lexer/rules.h>
+#include <parser/syntax_tree.h>
+#include <parser/rule_registry.h>
+#include <parser/rules.h>
 
 #include <debug/error_handler.h>
 #include <debug/log.h>
 
+#include <alloc.h>
+
 #define SYNTAX_TREE_PARSE_FAIL (SIZE_MAX)
 #define SYNTAX_TREE_PARSE_SUCCESS (SIZE_MAX - 1)
 
-void syntax_tree_init(syntax_tree_t * syntax_tree) {
+void syntax_tree_init(syntax_tree_t * syntax_tree, token_buffer_t * token_buffer) {
+    syntax_tree->token_buffer = token_buffer;
 
+    syntax_tree_node_init(&syntax_tree->head);
 }
 
 void syntax_tree_free(syntax_tree_t * syntax_tree) {
-
+    syntax_tree_node_free(&syntax_tree->head);
 }
 
 size_t syntax_tree_parse_recur(
-    syntax_tree_t * syntax_tree,
+    syntax_tree_node_t * syntax_tree_node,
     token_buffer_t * token_buffer,
     nonterminal_t nonterminal,
     size_t position,
@@ -71,6 +75,13 @@ size_t syntax_tree_parse_recur(
                 if (token_number(&token_buffer->tokens[position]) == rules[i]->tokens[j].terminal) {
                     log_printf("TOKEN MATCH\n");
 
+                    syntax_tree_node_list_node_t * new_node = pkcc_alloc(sizeof(syntax_tree_node_list_node_t));
+                    new_node->token_type = RT_TERMINAL;
+                    new_node->terminal.terminal = rules[i]->tokens[j].terminal;
+                    new_node->terminal.position = position;
+
+                    syntax_tree_node_list_link_back(syntax_tree_node, new_node);
+
                     position++;
 
                     if (j == rules[i]->token_count - 1) {
@@ -92,14 +103,22 @@ size_t syntax_tree_parse_recur(
                         }
                     }
 
+                    syntax_tree_node_clear(syntax_tree_node);
+
                     position = old_position;
 
                     break;
                 }
             }
             else if (rules[i]->tokens[j].type == RT_NONTERMINAL) {
+                syntax_tree_node_list_node_t * new_node = pkcc_alloc(sizeof(syntax_tree_node_list_node_t));
+                new_node->token_type = RT_NONTERMINAL;
+                new_node->nonterminal.nonterminal = rules[i]->tokens[j].nonterminal;
+                new_node->nonterminal.position = position;
+                syntax_tree_node_init(&new_node->nonterminal.tree);
+
                 size_t result = syntax_tree_parse_recur(
-                    syntax_tree,
+                    &new_node->nonterminal.tree,
                     token_buffer,
                     rules[i]->tokens[j].nonterminal,
                     position,
@@ -107,6 +126,16 @@ size_t syntax_tree_parse_recur(
                     deepest_token_number,
                     deepest_failing_nonterminal
                 );
+
+                bool nonterminal_success = result != SYNTAX_TREE_PARSE_FAIL && result != position;
+
+                if (nonterminal_success) {
+                    syntax_tree_node_list_link_back(syntax_tree_node, new_node);
+                }
+                else {
+                    syntax_tree_node_free(&new_node->nonterminal.tree);
+                    pkcc_free(new_node);
+                }
 
                 log_printf("\033[45mRETURNING TO %s with %zu\n", rules_nonterminal_name(nonterminal), result);
 
@@ -136,27 +165,107 @@ size_t syntax_tree_parse_recur(
     return SYNTAX_TREE_PARSE_FAIL;
 }
 
-void syntax_tree_parse(syntax_tree_t * syntax_tree, token_buffer_t * token_buffer) {
+void syntax_tree_parse(syntax_tree_t * syntax_tree) {
     size_t deepest_position = 0;
     token_number_t deepest_token_number;
     nonterminal_t deepest_failing_nonterminal = NT_NULL;
 
-    size_t result = syntax_tree_parse_recur(syntax_tree, token_buffer, 0, 0, &deepest_position, &deepest_token_number, &deepest_failing_nonterminal);
+    size_t result = syntax_tree_parse_recur(&syntax_tree->head, syntax_tree->token_buffer, 0, 0, &deepest_position, &deepest_token_number, &deepest_failing_nonterminal);
 
     if (result == SYNTAX_TREE_PARSE_FAIL) {
         if (deepest_failing_nonterminal == NT_NULL) fatal_error(
             "Parser error in file %s on line %zu\n    Expected %s\n",
-            token_buffer->tokens[deepest_position - 1].file_name->absolute_path,
-            token_buffer->tokens[deepest_position - 1].line + 1,
+            syntax_tree->token_buffer->tokens[deepest_position - 1].file_name->absolute_path,
+            syntax_tree->token_buffer->tokens[deepest_position - 1].line + 1,
             token_number_stringify(deepest_token_number)
         );
         else fatal_error(
             "Parser error in file %s on line %zu\n    Expected %s (%zu)\n",
-            token_buffer->tokens[deepest_position - 1].file_name->absolute_path,
-            token_buffer->tokens[deepest_position - 1].line + 1,
+            syntax_tree->token_buffer->tokens[deepest_position - 1].file_name->absolute_path,
+            syntax_tree->token_buffer->tokens[deepest_position - 1].line + 1,
             rules_nonterminal_report_name(deepest_failing_nonterminal),
             deepest_failing_nonterminal
         );
     }
     if (result == SYNTAX_TREE_PARSE_SUCCESS) log_printf("Lexing success\n");
+}
+
+void syntax_tree_print_recur(token_buffer_t * token_buffer, syntax_tree_node_t * node, size_t indent) {
+    syntax_tree_node_list_node_t * n = node->head->next;
+    while (n != node->tail) {
+        syntax_tree_node_list_node_t * next = n->next;
+
+        switch (n->token_type) {
+            case RT_TERMINAL: {
+                printf("   TERMINAL ");
+                for (size_t i = 0; i < indent; i++) printf("│ ");
+                char token_string[TOKEN_STRINGIFY_BUFFER_REQUIREMENT];
+                token_stringify(token_string, &token_buffer->tokens[n->terminal.position]);
+                printf("%s (line %zu)\n", token_string, token_buffer->tokens[n->terminal.position].line + 1);
+            } break;
+
+            case RT_NONTERMINAL: {
+                printf("NONTERMINAL ");
+                for (size_t i = 0; i < indent; i++) printf("│ ");
+
+                printf("%s\n", rules_nonterminal_name(n->nonterminal.nonterminal));
+
+                syntax_tree_print_recur(token_buffer, &n->nonterminal.tree, indent + 1);
+            } break;
+
+            default: break;
+        }
+
+        n = next;
+    }
+}
+
+void syntax_tree_print(syntax_tree_t * syntax_tree) {
+    syntax_tree_print_recur(syntax_tree->token_buffer, &syntax_tree->head, 0);
+}
+
+void syntax_tree_node_init(syntax_tree_node_t * node) {
+    node->head = pkcc_alloc(sizeof(syntax_tree_node_list_node_t));
+    node->tail = pkcc_alloc(sizeof(syntax_tree_node_list_node_t));
+
+    node->head->next = node->tail;
+    node->tail->prev = node->head;
+}
+
+void syntax_tree_node_free(syntax_tree_node_t * node) {
+    syntax_tree_node_list_node_t * n = node->head->next;
+    while (n != node->tail) {
+        syntax_tree_node_list_node_t * next = n->next;
+
+        if (n->token_type == RT_NONTERMINAL) syntax_tree_node_free(&n->nonterminal.tree);
+        pkcc_free(n);
+
+        n = next;
+    }
+
+    pkcc_free(node->head);
+    pkcc_free(node->tail);
+}
+
+void syntax_tree_node_clear(syntax_tree_node_t * node) {
+    syntax_tree_node_list_node_t * n = node->head->next;
+    while (n != node->tail) {
+        syntax_tree_node_list_node_t * next = n->next;
+
+        if (n->token_type == RT_NONTERMINAL) syntax_tree_node_free(&n->nonterminal.tree);
+        pkcc_free(n);
+
+        n = next;
+    }
+
+    node->head->next = node->tail;
+    node->tail->prev = node->head;
+}
+
+void syntax_tree_node_list_link_back(syntax_tree_node_t * node, syntax_tree_node_list_node_t * list_node) {
+    list_node->prev = node->tail->prev;
+    list_node->next = node->tail;
+
+    node->tail->prev->next = list_node;
+    node->tail->prev = list_node;
 }

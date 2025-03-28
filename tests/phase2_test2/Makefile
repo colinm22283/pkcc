@@ -1,6 +1,6 @@
 include $(TEST_INCLUDE)
 
-ARGUMENTS=-d -2 -I $(TEST_DIR) $(TEST_DIR)/test.c -o $(TEST_DIR)/test.pp
+ARGUMENTS=-d -2 -fdump-tree -I $(TEST_DIR) $(TEST_DIR)/test.c -o $(TEST_DIR)/test.pp
 COMMAND=$(PKCC) $(ARGUMENTS)
 
 FILES=test.c

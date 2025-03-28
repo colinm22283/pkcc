@@ -1,4 +1,4 @@
-#include <lexer/rules.h>
+#include <parser/rules.h>
 
 rule_token_t empty_tokens[] = { };
 

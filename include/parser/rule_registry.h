@@ -1,6 +1,6 @@
 #pragma once
 
-#include <lexer/rule.h>
+#include <parser/rule.h>
 
 #include <scanner/token.h>
 
