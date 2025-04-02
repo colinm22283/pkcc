@@ -151,8 +151,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                         );
                     }
                 }
-
-                if (buffer[position + 2] != '\'') {
+                else if (buffer[position + 2] != '\'') {
                     fatal_line_error(
                         line_buffer,
                         file_name,

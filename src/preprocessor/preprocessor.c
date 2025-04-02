@@ -49,6 +49,7 @@ void preprocessor_parse(preprocessor_t * preprocessor, const char * input_data) 
             log_printf("Got preprocessor directive on line %zu\n", line + 1);
 
             position++;
+            while (data[position] == ' ') position++;
 
             if (strncmp(&data[position], "include", 7) == 0) {
                 position += 7;

@@ -49,7 +49,7 @@ size_t scanner_parse_number(
             BINARY, OCTAL, DECIMAL, HEXADECIMAL
         } radix;
 
-        if (data[position] == '0' && is_number_char(data[position + 1])) {
+        if (data[position] == '0') {
             position++;
 
             if (case_insensitive_compare(data[position], 'b')) {
@@ -60,18 +60,9 @@ size_t scanner_parse_number(
                 radix = HEXADECIMAL;
                 position++;
             }
-            else if (is_number_char(data[position])) {
+            else {
                 radix = OCTAL;
                 position--;
-            }
-            else {
-                fatal_line_error(
-                    line_buffer,
-                    file_name,
-                    "Unknown radix identifier",
-                    line_number,
-                    position
-                );
             }
         }
         else radix = DECIMAL;
@@ -84,7 +75,11 @@ size_t scanner_parse_number(
         }
 
         size_t number_length = 0;
-        while (is_number_char(data[position + number_length])) number_length++;
+        while (
+            is_number_char(data[position + number_length]) ||
+            (data[position + number_length] >= 'a' && data[position + number_length] <= 'f') ||
+            (data[position + number_length] >= 'A' && data[position + number_length] <= 'F')
+        ) number_length++;
 
         log_printf("Number length is %zu\n", number_length);
 

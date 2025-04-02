@@ -46,8 +46,6 @@ void parser_print_phase2_recur(FILE * out_file, syntax_tree_t * syntax_tree, syn
                 } break;
 
                 case NT_DECL_VAR: {
-                    token_t * token = &syntax_tree->token_buffer->tokens[n->nonterminal.position];
-
                     bool has_name = false;
 
                     if (state == P2S_CODE_BLOCK) {
