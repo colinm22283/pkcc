@@ -50,7 +50,7 @@ void preprocessor_comment_filter_parse(preprocessor_comment_filter_t * cf, const
 
             if (input[position] == '\0') break;
         }
-        else if (input[position] == '/') {
+        else if (input[position] == '/' && (input[position + 1] == '*' || input[position + 1] == '/')) {
             size_t comment_start = position;
 
             if (input[position + 1] == '*') {
