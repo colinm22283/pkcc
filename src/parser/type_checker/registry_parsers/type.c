@@ -6,7 +6,7 @@
 
 #include <alloc.h>
 
-type_checker_type_t * type_checker_registry_parse_type(type_checker_registry_t * tr, token_buffer_t * token_buffer, syntax_tree_node_list_node_t * type_node) {
+type_checker_type_t * type_checker_registry_parse_type(type_checker_registry_t * tr, line_buffer_t * line_buffer, token_buffer_t * token_buffer, syntax_tree_node_list_node_t * type_node) {
     if (type_node->token_type != RT_NONTERMINAL) type_checker_error();
     if (type_node->nonterminal.nonterminal != NT_TYPE) type_checker_error();
 
@@ -107,41 +107,50 @@ type_checker_type_t * type_checker_registry_parse_type(type_checker_registry_t *
         tr->entries = pkcc_realloc(tr->entries, tr->capacity * sizeof(type_checker_registry_entry_t *));
     }
 
+    type_checker_type_t * ret_type = &entry->type;
+
     if (qualifier_count > 0) {
-        entry->type.is_base = false;
+        type_checker_registry_entry_t * qualifier_entry = pkcc_alloc(sizeof(type_checker_registry_entry_t));
+        tr->entries[tr->size++] = qualifier_entry;
+        if (tr->size == tr->capacity) {
+            tr->capacity *= 2;
 
-        fatal_error("NO QUALIFERS!\n");
+            tr->entries = pkcc_realloc(tr->entries, tr->capacity * sizeof(type_checker_registry_entry_t *));
+        }
 
-        // TODO: aaaaaaaaa
+        qualifier_entry->type.is_base = false;
+        qualifier_entry->type.derived_type.qualified.qualifiers = pkcc_realloc(qualifiers, qualifier_count * sizeof(type_checker_derived_type_qualifier_t));
+        qualifier_entry->type.derived_type.qualified.qualifier_count = qualifier_count;
+        qualifier_entry->type.derived_type.qualified.subtype = &entry->type;
+
+        ret_type = &qualifier_entry->type;
+    }
+    else pkcc_free(qualifiers);
+
+    entry->type.is_base = true;
+
+    syntax_tree_node_list_node_t * inner_type_sub_node = inner_type_node->nonterminal.tree.head->next;
+
+    if (inner_type_sub_node->token_type == RT_TERMINAL) {
+        switch (inner_type_sub_node->terminal.terminal) {
+            case token_number_keyword(SCANNER_KEYWORD_TYPE_VOID): entry->type.base_type.type = BTT_VOID; break;
+            case token_number_keyword(SCANNER_KEYWORD_TYPE_BOOL): entry->type.base_type.type = BTT_BOOL; break;
+            case token_number_keyword(SCANNER_KEYWORD_TYPE_CHAR): entry->type.base_type.type = BTT_CHAR; break;
+            case token_number_keyword(SCANNER_KEYWORD_TYPE_SHORT): entry->type.base_type.type = BTT_SHORT; break;
+            case token_number_keyword(SCANNER_KEYWORD_TYPE_INT): entry->type.base_type.type = BTT_INT; break;
+            case token_number_keyword(SCANNER_KEYWORD_TYPE_LONG): entry->type.base_type.type = BTT_LONG; break;
+            case token_number_keyword(SCANNER_KEYWORD_TYPE_FLOAT): entry->type.base_type.type = BTT_FLOAT; break;
+            case token_number_keyword(SCANNER_KEYWORD_TYPE_DOUBLE): entry->type.base_type.type = BTT_DOUBLE; break;
+            // TODO: long long
+
+            default: fatal_error("Unknown type received\n");
+        }
+
+        entry->type.base_type.sign = BTS_SIGNED; // TODO: support unsigned
     }
     else {
-        pkcc_free(qualifiers);
-
-        entry->type.is_base = true;
-
-        syntax_tree_node_list_node_t * inner_type_sub_node = inner_type_node->nonterminal.tree.head->next;
-
-        if (inner_type_sub_node->token_type == RT_TERMINAL) {
-            switch (inner_type_sub_node->terminal.terminal) {
-                case token_number_keyword(SCANNER_KEYWORD_TYPE_VOID): entry->type.base_type.type = BTT_VOID; break;
-                case token_number_keyword(SCANNER_KEYWORD_TYPE_BOOL): entry->type.base_type.type = BTT_BOOL; break;
-                case token_number_keyword(SCANNER_KEYWORD_TYPE_CHAR): entry->type.base_type.type = BTT_CHAR; break;
-                case token_number_keyword(SCANNER_KEYWORD_TYPE_SHORT): entry->type.base_type.type = BTT_SHORT; break;
-                case token_number_keyword(SCANNER_KEYWORD_TYPE_INT): entry->type.base_type.type = BTT_INT; break;
-                case token_number_keyword(SCANNER_KEYWORD_TYPE_LONG): entry->type.base_type.type = BTT_LONG; break;
-                case token_number_keyword(SCANNER_KEYWORD_TYPE_FLOAT): entry->type.base_type.type = BTT_FLOAT; break;
-                case token_number_keyword(SCANNER_KEYWORD_TYPE_DOUBLE): entry->type.base_type.type = BTT_DOUBLE; break;
-                // TODO: long long
-
-                default: fatal_error("Unknown type received\n");
-            }
-
-            entry->type.base_type.sign = BTS_SIGNED; // TODO: support unsigned
-        }
-        else {
-            return type_checker_registry_parse(tr, token_buffer, inner_type_sub_node);
-        }
+        return type_checker_registry_parse(tr, line_buffer, token_buffer, inner_type_sub_node);
     }
 
-    return &entry->type;
+    return ret_type;
 }

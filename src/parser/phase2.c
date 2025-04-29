@@ -24,7 +24,7 @@ void parser_print_phase2_recur(FILE * out_file, syntax_tree_t * syntax_tree, syn
                     token_t * name_token = &syntax_tree->token_buffer->tokens[n->nonterminal.tree.head->next->next->terminal.position];
                     token_data_identifier_t * identifier = name_token->data;
 
-                    fprintf(out_file, "File %s Line %zu: function %s\n", token->file_name->absolute_path, token->line + 1, identifier->name);
+                    fprintf(out_file, "File %s Line %zu: function %s\n", token->file_name->absolute_path, token->line_index + 1, identifier->name);
 
                     parser_print_phase2_recur(out_file, syntax_tree, &n->nonterminal.tree, P2S_FUNCTION_DECL);
                 } break;
@@ -39,8 +39,8 @@ void parser_print_phase2_recur(FILE * out_file, syntax_tree_t * syntax_tree, syn
                         name = identifier->name;
                     }
 
-                    if (state == P2S_GLOBAL) fprintf(out_file, "File %s Line %zu: global struct %s\n", token->file_name->absolute_path, token->line + 1, name);
-                    else if (state == P2S_CODE_BLOCK) fprintf(out_file, "File %s Line %zu: local struct %s\n", token->file_name->absolute_path, token->line + 1, name);
+                    if (state == P2S_GLOBAL) fprintf(out_file, "File %s Line %zu: global struct %s\n", token->file_name->absolute_path, token->line_index + 1, name);
+                    else if (state == P2S_CODE_BLOCK) fprintf(out_file, "File %s Line %zu: local struct %s\n", token->file_name->absolute_path, token->line_index + 1, name);
 
                     parser_print_phase2_recur(out_file, syntax_tree, &n->nonterminal.tree, P2S_STRUCT_DECL);
                 } break;
@@ -71,11 +71,11 @@ void parser_print_phase2_recur(FILE * out_file, syntax_tree_t * syntax_tree, syn
                     token_t * name_token = &syntax_tree->token_buffer->tokens[n->nonterminal.tree.head->next->terminal.position];
                     token_data_identifier_t * identifier = name_token->data;
 
-                    if (state == P2S_GLOBAL) fprintf(out_file, "File %s Line %zu: global variable %s\n", token->file_name->absolute_path, token->line + 1, identifier->name);
-                    else if (state == P2S_STRUCT_DECL) fprintf(out_file, "File %s Line %zu: member %s\n", token->file_name->absolute_path, token->line + 1, identifier->name);
-                    else if (state == P2S_FUNCTION_DECL) fprintf(out_file, "File %s Line %zu: parameter %s\n", token->file_name->absolute_path, token->line + 1, identifier->name);
+                    if (state == P2S_GLOBAL) fprintf(out_file, "File %s Line %zu: global variable %s\n", token->file_name->absolute_path, token->line_index + 1, identifier->name);
+                    else if (state == P2S_STRUCT_DECL) fprintf(out_file, "File %s Line %zu: member %s\n", token->file_name->absolute_path, token->line_index + 1, identifier->name);
+                    else if (state == P2S_FUNCTION_DECL) fprintf(out_file, "File %s Line %zu: parameter %s\n", token->file_name->absolute_path, token->line_index + 1, identifier->name);
                     else if (state == P2S_CODE_BLOCK || state == P2S_NAMED_VAR) {
-                        fprintf(out_file, "File %s Line %zu: local variable %s\n", token->file_name->absolute_path, token->line + 1, identifier->name);
+                        fprintf(out_file, "File %s Line %zu: local variable %s\n", token->file_name->absolute_path, token->line_index + 1, identifier->name);
                     }
 
                     parser_print_phase2_recur(out_file, syntax_tree, &n->nonterminal.tree, state);
@@ -87,7 +87,7 @@ void parser_print_phase2_recur(FILE * out_file, syntax_tree_t * syntax_tree, syn
                     token_t * name_token = &syntax_tree->token_buffer->tokens[n->nonterminal.tree.head->next->next->terminal.position];
                     token_data_identifier_t * identifier = name_token->data;
 
-                    if (state == P2S_FUNCTION_DECL) fprintf(out_file, "File %s Line %zu: parameter %s\n", token->file_name->absolute_path, token->line + 1, identifier->name);
+                    if (state == P2S_FUNCTION_DECL) fprintf(out_file, "File %s Line %zu: parameter %s\n", token->file_name->absolute_path, token->line_index + 1, identifier->name);
 
                     parser_print_phase2_recur(out_file, syntax_tree, &n->nonterminal.tree, P2S_FUNCTION_DECL_ARG_LIST);
                 } break;
@@ -98,7 +98,7 @@ void parser_print_phase2_recur(FILE * out_file, syntax_tree_t * syntax_tree, syn
                     token_t * name_token = &syntax_tree->token_buffer->tokens[n->nonterminal.tree.head->next->next->next->terminal.position];
                     token_data_identifier_t * identifier = name_token->data;
 
-                    if (state == P2S_FUNCTION_DECL_ARG_LIST) fprintf(out_file, "File %s Line %zu: parameter %s\n", token->file_name->absolute_path, token->line + 1, identifier->name);
+                    if (state == P2S_FUNCTION_DECL_ARG_LIST) fprintf(out_file, "File %s Line %zu: parameter %s\n", token->file_name->absolute_path, token->line_index + 1, identifier->name);
 
                     parser_print_phase2_recur(out_file, syntax_tree, &n->nonterminal.tree, state);
                 } break;

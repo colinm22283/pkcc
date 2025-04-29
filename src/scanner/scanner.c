@@ -75,7 +75,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                 token_data_string_literal_t * data = token->data;
 
                 token->file_name = line->metadata.file_name;
-                token->line = line_number;
+                token->line_index = line_index;
                 token->position = position;
 
                 data->content = pkcc_alloc(string_size + 1);
@@ -131,7 +131,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                         token_data_constant_t * data = token->data;
 
                         token->file_name = line->metadata.file_name;
-                        token->line = line_number;
+                        token->line_index = line_index;
                         token->position = position;
 
                         data->type = SCANNER_CONSTANT_TYPE_SC;
@@ -167,7 +167,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                 token_data_constant_t * data = token->data;
 
                 token->file_name = line->metadata.file_name;
-                token->line = line_number;
+                token->line_index = line_index;
                 token->position = position;
 
                 data->type = SCANNER_CONSTANT_TYPE_SC;
@@ -189,7 +189,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                             token_data_punctuation_t * data = token->data;
 
                             token->file_name = line->metadata.file_name;
-                            token->line = line_number;
+                            token->line_index = line_index;
                             token->position = position;
 
                             data->type = punctuation_translations[i].punctuation;
@@ -218,7 +218,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                             token_data_keyword_t * data = token->data;
 
                             token->file_name = line->metadata.file_name;
-                            token->line = line_number;
+                            token->line_index = line_index;
                             token->position = position;
 
                             data->keyword = keyword_translations[i].keyword;
@@ -250,7 +250,7 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
                         token_data_identifier_t * data = token->data;
 
                         token->file_name = line->metadata.file_name;
-                        token->line = line_number;
+                        token->line_index = line_index;
                         token->position = position;
                         data->name = name;
 
@@ -295,10 +295,10 @@ void scanner_print_tokens(scanner_t * scanner) {
     for (size_t i = 0; i < scanner->tb.token_count; i++) {
         token_t * token = &scanner->tb.tokens[i];
 
-        if (line != token->line) {
-            line = token->line;
+        if (line != token->line_index) {
+            line = token->line_index;
 
-            log_printf("\n%-6zu ", token->line + 1);
+            log_printf("\n%-6zu ", token->line_index + 1);
             fflush(stdout);
         }
 

@@ -46,17 +46,31 @@ char * type_checker_type_stringify(type_checker_type_t * type) {
                     PUSH_CHAR(' ');
                 }
 
-                PUSH_STR("{ ");
+                if (type->derived_type.structure.subtypes != NULL) {
+                    PUSH_STR("{ ");
 
-                for (size_t i = 0; i < type->derived_type.structure.subtype_count; i++) {
-                    char * type_string = type_checker_type_stringify(type->derived_type.structure.subtypes[i]);
-                    PUSH_STR(type_string);
-                    pkcc_free(type_string);
+                    for (size_t i = 0; i < type->derived_type.structure.subtype_count; i++) {
+                        char * type_string = type_checker_type_stringify(type->derived_type.structure.subtypes[i]);
+                        PUSH_STR(type_string);
+                        pkcc_free(type_string);
 
-                    if (i != type->derived_type.structure.subtype_count - 1) PUSH_STR(", ");
+                        if (i != type->derived_type.structure.subtype_count - 1) PUSH_STR(", ");
+                    }
+
+                    PUSH_STR(" }");
                 }
+            } break;
 
-                PUSH_STR(" }");
+            case DTT_QUALIFIED: {
+                char * type_string = type_checker_type_stringify(type->derived_type.qualified.subtype);
+                PUSH_STR(type_string);
+                pkcc_free(type_string);
+
+                for (size_t i = 0; i < type->derived_type.qualified.qualifier_count; i++) {
+                    switch (type->derived_type.qualified.qualifiers[i]) {
+                        case DTQ_CONST: PUSH_STR(" const"); break;
+                    }
+                }
             } break;
 
             default: fatal_error("Unimlemented in stringify");

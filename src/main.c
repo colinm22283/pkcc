@@ -89,7 +89,7 @@ int main(int argc, const char ** argv) {
     }
 
     static parser_t parser;
-    parser_init(&parser, &scanner);
+    parser_init(&parser, &scanner, &preprocessor_output);
     __MAYBE_UNUSED free_list_node_t * parser_node = free_list_push(&free_list, &parser, (void (*)(void *)) parser_free);
 
     parser_run(&parser);

@@ -178,13 +178,13 @@ void syntax_tree_parse(syntax_tree_t * syntax_tree) {
         if (deepest_failing_nonterminal == NT_NULL) fatal_error(
             "Parser error in file %s on line %zu\n    Expected %s\n",
             syntax_tree->token_buffer->tokens[deepest_position - 1].file_name->absolute_path,
-            syntax_tree->token_buffer->tokens[deepest_position - 1].line + 1,
+            syntax_tree->token_buffer->tokens[deepest_position - 1].line_index + 1,
             token_number_stringify(deepest_token_number)
         );
         else fatal_error(
             "Parser error in file %s on line %zu\n    Expected %s (%zu)\n",
             syntax_tree->token_buffer->tokens[deepest_position - 1].file_name->absolute_path, // TODO: BUG file_name is null on first token
-            syntax_tree->token_buffer->tokens[deepest_position - 1].line + 1,
+            syntax_tree->token_buffer->tokens[deepest_position - 1].line_index + 1,
             rules_nonterminal_report_name(deepest_failing_nonterminal),
             deepest_failing_nonterminal
         );
@@ -203,7 +203,7 @@ void syntax_tree_print_recur(token_buffer_t * token_buffer, syntax_tree_node_t *
                 for (size_t i = 0; i < indent; i++) printf("│ ");
                 char token_string[TOKEN_STRINGIFY_BUFFER_REQUIREMENT];
                 token_stringify(token_string, &token_buffer->tokens[n->terminal.position]);
-                printf("%s (line %zu)\n", token_string, token_buffer->tokens[n->terminal.position].line + 1);
+                printf("%s (line %zu)\n", token_string, token_buffer->tokens[n->terminal.position].line_index + 1);
             } break;
 
             case RT_NONTERMINAL: {

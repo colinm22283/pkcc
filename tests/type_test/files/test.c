@@ -1,8 +1,5 @@
-struct fsdfs {
-    long a;
-    short b;
+struct test_s {
+    int a;
+} d;
 
-    struct {
-        int d;
-    };
-} c;
+struct test_s e;

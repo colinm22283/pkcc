@@ -2,12 +2,12 @@
 
 #include <debug/log.h>
 
-void parser_init(parser_t * parser, scanner_t * scanner) {
+void parser_init(parser_t * parser, scanner_t * scanner, line_buffer_t * line_buffer) {
     log_printf("Initializing parser\n");
 
     syntax_tree_init(&parser->syntax_tree, &scanner->tb);
 
-    type_checker_init(&parser->type_checker, &parser->syntax_tree, &scanner->tb);
+    type_checker_init(&parser->type_checker, line_buffer, &parser->syntax_tree, &scanner->tb);
 }
 
 void parser_free(parser_t * parser) {

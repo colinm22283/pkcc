@@ -152,7 +152,7 @@ typedef enum {
 typedef struct {
     token_type_t type;
     file_name_entry_t * file_name;
-    size_t line, position;
+    size_t line_index, position;
     union {
         token_data_identifier_t * identifier_data;
         token_data_keyword_t * keyword_data;

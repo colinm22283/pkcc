@@ -13,7 +13,11 @@ void type_checker_type_free(type_checker_type_t * type) {
                 pkcc_free(type->derived_type.structure.subtypes);
             } break;
 
-            default: fatal_error("Type free: bad type\n");
+            case DTT_QUALIFIED: {
+
+            } break;
+
+            default: log_printf("ERROR\n");
         }
     }
 }

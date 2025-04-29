@@ -17,4 +17,4 @@ typedef struct {
 void type_checker_registry_init(type_checker_registry_t * tr);
 void type_checker_registry_free(type_checker_registry_t * tr);
 
-type_checker_type_t * type_checker_registry_parse(type_checker_registry_t * tr, token_buffer_t * token_buffer, syntax_tree_node_list_node_t * node);
+type_checker_type_t * type_checker_registry_parse(type_checker_registry_t * tr, line_buffer_t * line_buffer, token_buffer_t * token_buffer, syntax_tree_node_list_node_t * node);

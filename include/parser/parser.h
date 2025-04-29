@@ -10,7 +10,7 @@ typedef struct {
     type_checker_t type_checker;
 } parser_t;
 
-void parser_init(parser_t * lexer, scanner_t * scanner);
+void parser_init(parser_t * lexer, scanner_t * scanner, line_buffer_t * line_buffer);
 void parser_free(parser_t * lexer);
 
 void parser_run(parser_t * lexer);

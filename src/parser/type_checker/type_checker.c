@@ -3,10 +3,11 @@
 
 #include <debug/log.h>
 
-void type_checker_init(type_checker_t * tc, syntax_tree_t * syntax_tree, token_buffer_t * token_buffer) {
+void type_checker_init(type_checker_t * tc, line_buffer_t * line_buffer, syntax_tree_t * syntax_tree, token_buffer_t * token_buffer) {
     log_printf("Initializing type checker\n");
 
     tc->syntax_tree = syntax_tree;
+    tc->line_buffer = line_buffer;
     tc->token_buffer = token_buffer;
 
     type_checker_registry_init(&tc->type_registry);
@@ -25,12 +26,13 @@ void type_checker_run_recur(type_checker_t * tc, syntax_tree_node_t * node) {
         if (list_node->token_type == RT_NONTERMINAL) {
             switch (list_node->nonterminal.nonterminal) {
                 case NT_STRUCT: {
-                    type_checker_registry_parse(&tc->type_registry, tc->token_buffer, list_node);
+                    type_checker_registry_parse(&tc->type_registry, tc->line_buffer, tc->token_buffer, list_node);
                 } break;
 
                 case NT_DECL_VAR: {
                     list_node->type = type_checker_registry_parse(
                         &tc->type_registry,
+                        tc->line_buffer,
                         tc->token_buffer,
                         list_node->nonterminal.tree.head->next
                     );

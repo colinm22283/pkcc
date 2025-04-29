@@ -121,7 +121,7 @@ void scanner_print_phase1(FILE * out_stream, scanner_t * scanner) {
     for (size_t i = 0; i < scanner->tb.token_count; i++) {
         token_t * token = &scanner->tb.tokens[i];
 
-        fprintf(out_stream, "File '%s' Line %zu Token ", token->file_name->absolute_path, token->line + 1);
+        fprintf(out_stream, "File '%s' Line %zu Token ", token->file_name->absolute_path, token->line_index + 1);
 
         switch (token->type) {
             case TOKEN_TYPE_IDENTIFIER: {

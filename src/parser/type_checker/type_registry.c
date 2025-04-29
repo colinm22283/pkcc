@@ -25,16 +25,16 @@ void type_checker_registry_free(type_checker_registry_t * tr) {
     pkcc_free(tr->entries);
 }
 
-type_checker_type_t * type_checker_registry_parse(type_checker_registry_t * tr, token_buffer_t * token_buffer, syntax_tree_node_list_node_t * node) {
+type_checker_type_t * type_checker_registry_parse(type_checker_registry_t * tr, line_buffer_t * line_buffer, token_buffer_t * token_buffer, syntax_tree_node_list_node_t * node) {
     // TODO: parse the syntax tree
     if (node->token_type == RT_NONTERMINAL) {
         switch (node->nonterminal.nonterminal) {
             case NT_STRUCT: {
-                return type_checker_registry_parse_struct(tr, token_buffer, node);
+                return type_checker_registry_parse_struct(tr, line_buffer, token_buffer, node);
             } break;
 
             case NT_TYPE: {
-                return type_checker_registry_parse_type(tr, token_buffer, node);
+                return type_checker_registry_parse_type(tr, line_buffer, token_buffer, node);
             } break;
 
             default: break;
