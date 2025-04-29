@@ -31,3 +31,10 @@ OBJS+=$(OBJ_DIR)/parser/syntax_tree.o
 OBJS+=$(OBJ_DIR)/parser/rule_registry.o
 OBJS+=$(OBJ_DIR)/parser/rules.o
 OBJS+=$(OBJ_DIR)/parser/phase2.o
+
+OBJS+=$(OBJ_DIR)/parser/type_checker/type_stringify.o
+OBJS+=$(OBJ_DIR)/parser/type_checker/type_free.o
+OBJS+=$(OBJ_DIR)/parser/type_checker/type_checker.o
+OBJS+=$(OBJ_DIR)/parser/type_checker/type_registry.o
+OBJS+=$(OBJ_DIR)/parser/type_checker/registry_parsers/struct.o
+OBJS+=$(OBJ_DIR)/parser/type_checker/registry_parsers/type.o

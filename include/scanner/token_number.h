@@ -25,7 +25,6 @@ static inline token_number_t token_number(token_t * token) {
     }
 }
 
-#define TOKEN_NUMBER_STRINGIFY_PHASE1_REQUIRED_LENGTH (SCANNER_STRINGIFY_PHASE1_REQUIRED_LENGTH)
 static inline const char * token_number_stringify(token_number_t token_number) {
     token_t token;
 

@@ -4,21 +4,6 @@
 
 #include <debug/error_handler.h>
 
-typedef enum {
-    TOKEN_TYPE_IDENTIFIER,
-    TOKEN_TYPE_KEYWORD,
-    TOKEN_TYPE_CONSTANT,
-    TOKEN_TYPE_PUNCTUATION,
-    TOKEN_TYPE_STRING_LITERAL,
-} token_type_t;
-
-typedef struct {
-    token_type_t type;
-    file_name_entry_t * file_name;
-    size_t line, position;
-    void * data;
-} token_t;
-
 typedef struct {
     char * name;
 } token_data_identifier_t;
@@ -155,6 +140,29 @@ typedef struct {
 typedef struct {
     char * content;
 } token_data_string_literal_t;
+
+typedef enum {
+    TOKEN_TYPE_IDENTIFIER,
+    TOKEN_TYPE_KEYWORD,
+    TOKEN_TYPE_CONSTANT,
+    TOKEN_TYPE_PUNCTUATION,
+    TOKEN_TYPE_STRING_LITERAL,
+} token_type_t;
+
+typedef struct {
+    token_type_t type;
+    file_name_entry_t * file_name;
+    size_t line, position;
+    union {
+        token_data_identifier_t * identifier_data;
+        token_data_keyword_t * keyword_data;
+        token_data_constant_t * constant_data;
+        token_data_punctuation_t * punctuation_data;
+        token_data_string_literal_t * string_literal_data;
+
+        void * data;
+    };
+} token_t;
 
 void token_init(token_t * token, token_type_t type);
 void token_free(token_t * token);

@@ -77,6 +77,7 @@ size_t syntax_tree_parse_recur(
 
                     syntax_tree_node_list_node_t * new_node = pkcc_alloc(sizeof(syntax_tree_node_list_node_t));
                     new_node->token_type = RT_TERMINAL;
+                    new_node->type = NULL;
                     new_node->terminal.terminal = rules[i]->tokens[j].terminal;
                     new_node->terminal.position = position;
 
@@ -113,6 +114,7 @@ size_t syntax_tree_parse_recur(
             else if (rules[i]->tokens[j].type == RT_NONTERMINAL) {
                 syntax_tree_node_list_node_t * new_node = pkcc_alloc(sizeof(syntax_tree_node_list_node_t));
                 new_node->token_type = RT_NONTERMINAL;
+                new_node->type = NULL;
                 new_node->nonterminal.nonterminal = rules[i]->tokens[j].nonterminal;
                 new_node->nonterminal.position = position;
                 syntax_tree_node_init(&new_node->nonterminal.tree);
@@ -181,7 +183,7 @@ void syntax_tree_parse(syntax_tree_t * syntax_tree) {
         );
         else fatal_error(
             "Parser error in file %s on line %zu\n    Expected %s (%zu)\n",
-            syntax_tree->token_buffer->tokens[deepest_position - 1].file_name->absolute_path,
+            syntax_tree->token_buffer->tokens[deepest_position - 1].file_name->absolute_path, // TODO: BUG file_name is null on first token
             syntax_tree->token_buffer->tokens[deepest_position - 1].line + 1,
             rules_nonterminal_report_name(deepest_failing_nonterminal),
             deepest_failing_nonterminal
@@ -208,7 +210,16 @@ void syntax_tree_print_recur(token_buffer_t * token_buffer, syntax_tree_node_t *
                 printf("NONTERMINAL ");
                 for (size_t i = 0; i < indent; i++) printf("│ ");
 
-                printf("%s\n", rules_nonterminal_name(n->nonterminal.nonterminal));
+                printf("%s ", rules_nonterminal_name(n->nonterminal.nonterminal));
+
+                if (n->type != NULL) {
+                    char * type_string = type_checker_type_stringify(n->type);
+
+                    printf("        TYPE: '%s'\n", type_string);
+
+                    pkcc_free(type_string);
+                }
+                else printf("\n");
 
                 syntax_tree_print_recur(token_buffer, &n->nonterminal.tree, indent + 1);
             } break;

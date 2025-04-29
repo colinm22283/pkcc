@@ -5,6 +5,7 @@
 #include <scanner/token_buffer.h>
 
 #include <parser/rule.h>
+#include <parser/type_checker/type.h>
 
 struct syntax_tree_node_list_node_s;
 
@@ -28,6 +29,8 @@ typedef struct syntax_tree_node_list_node_s {
             size_t position;
         } terminal;
     };
+
+    type_checker_type_t * type;
 
     struct syntax_tree_node_list_node_s * prev;
     struct syntax_tree_node_list_node_s * next;

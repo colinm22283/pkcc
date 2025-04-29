@@ -245,11 +245,6 @@ punctuation_translation_entry_t punctuation_translations[PUNCTUATION_TRANSLATION
         .punctuation = SCANNER_PUNCTUATION_TYPE_LOGICAL_OR,
     },
     (punctuation_translation_entry_t) {
-        .string = "|",
-        .length = 2,
-        .punctuation = SCANNER_PUNCTUATION_TYPE_BITWISE_OR,
-    },
-    (punctuation_translation_entry_t) {
         .string = "<<",
         .length = 2,
         .punctuation = SCANNER_PUNCTUATION_TYPE_BITWISE_SHIFT_LEFT,
@@ -308,6 +303,11 @@ punctuation_translation_entry_t punctuation_translations[PUNCTUATION_TRANSLATION
         .string = ".*",
         .length = 2,
         .punctuation = SCANNER_PUNCTUATION_TYPE_POINTER_TO_REFERENCE,
+    },
+    (punctuation_translation_entry_t) {
+        .string = "|",
+        .length = 1,
+        .punctuation = SCANNER_PUNCTUATION_TYPE_BITWISE_OR,
     },
     (punctuation_translation_entry_t) {
         .string = "+",

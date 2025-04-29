@@ -231,7 +231,7 @@ static inline const char * rules_nonterminal_report_name(nonterminal_t nontermin
         case NT_STRUCT_NAME: return "struct";
 
         case NT_TYPE_VOID: return "type";
-        case NT_TYPE: return "type";
+        case NT_TYPE: return "non-void type";
         case NT_TYPE_INNER: return "type";
 
         case NT_QUALIFIER: return "qualifier";
