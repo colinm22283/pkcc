@@ -6,7 +6,12 @@
 
 #include <alloc.h>
 
-type_checker_type_t * type_checker_registry_parse_type(type_checker_registry_t * tr, line_buffer_t * line_buffer, token_buffer_t * token_buffer, syntax_tree_node_list_node_t * type_node) {
+type_checker_type_t * type_checker_registry_parse_type(
+    type_checker_registry_t * tr,
+    __MAYBE_UNUSED line_buffer_t * line_buffer,
+    __MAYBE_UNUSED token_buffer_t * token_buffer,
+    syntax_tree_node_list_node_t * type_node
+) {
     if (type_node->token_type != RT_NONTERMINAL) type_checker_error();
     if (type_node->nonterminal.nonterminal != NT_TYPE) type_checker_error();
 
@@ -149,7 +154,8 @@ type_checker_type_t * type_checker_registry_parse_type(type_checker_registry_t *
         entry->type.base_type.sign = BTS_SIGNED; // TODO: support unsigned
     }
     else {
-        return type_checker_registry_parse(tr, line_buffer, token_buffer, inner_type_sub_node);
+//        return type_checker_registry_parse(tr, line_buffer, token_buffer, inner_type_sub_node);
+        return inner_type_sub_node->type;
     }
 
     return ret_type;

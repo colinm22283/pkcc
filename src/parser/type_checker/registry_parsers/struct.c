@@ -5,7 +5,12 @@
 
 #include <alloc.h>
 
-type_checker_type_t * type_checker_registry_parse_struct(type_checker_registry_t * tr, line_buffer_t * line_buffer, token_buffer_t * token_buffer, syntax_tree_node_list_node_t * struct_node) {
+type_checker_type_t * type_checker_registry_parse_struct(
+    type_checker_registry_t * tr,
+    line_buffer_t * line_buffer,
+    token_buffer_t * token_buffer,
+    syntax_tree_node_list_node_t * struct_node
+) {
     if (struct_node->token_type != RT_NONTERMINAL) fatal_error("Internal: Invalid definition node type!\n");
     if (struct_node->nonterminal.nonterminal != NT_STRUCT) fatal_error("Internal: Definition is not struct!\n");
 
@@ -33,15 +38,17 @@ type_checker_type_t * type_checker_registry_parse_struct(type_checker_registry_t
             if (tr->entries[i] != entry) {
                 if (!tr->entries[i]->type.is_base) {
                     if (tr->entries[i]->type.derived_type.type == DTT_STRUCT) {
-                        if (strcmp(tr->entries[i]->type.derived_type.structure.name, struct_name) == 0) {
-                            log_printf("Struct already defined\n");
+                        if (tr->entries[i]->type.derived_type.structure.name != NULL) {
+                            if (strcmp(tr->entries[i]->type.derived_type.structure.name, struct_name) == 0) {
+                                log_printf("Struct already defined\n");
 
-                            already_declared = true;
+                                already_declared = true;
 
-                            pkcc_free(entry);
-                            entry = tr->entries[i];
+                                pkcc_free(entry);
+                                entry = tr->entries[i];
 
-                            break;
+                                break;
+                            }
                         }
                     }
                 }
@@ -112,9 +119,9 @@ type_checker_type_t * type_checker_registry_parse_struct(type_checker_registry_t
                 if (member_decl_type_node->token_type != RT_NONTERMINAL) fatal_error("Internal: Struct member type not nonterminal\n");
                 if (member_decl_type_node->nonterminal.nonterminal != NT_TYPE) fatal_error("Internal: Struct member type not correct nonterminal\n");
 
-                type_checker_type_t * type = type_checker_registry_parse(tr, line_buffer, token_buffer, member_decl_type_node);
+                type_checker_type_t * type = member_decl_type_node->type;
 
-                member_types[member_type_count++] = type;
+                    member_types[member_type_count++] = type;
 
                 if (member_type_count == member_type_capacity) {
                     member_type_capacity *= 2;

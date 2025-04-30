@@ -14,6 +14,21 @@ typedef struct {
     type_checker_registry_entry_t ** entries;
 } type_checker_registry_t;
 
+extern type_checker_type_t * void_type;
+extern type_checker_type_t * bool_type;
+extern type_checker_type_t * uchar_type;
+extern type_checker_type_t * ushort_type;
+extern type_checker_type_t * uint_type;
+extern type_checker_type_t * ulong_type;
+extern type_checker_type_t * ulonglong_type;
+extern type_checker_type_t * schar_type;
+extern type_checker_type_t * sshort_type;
+extern type_checker_type_t * sint_type;
+extern type_checker_type_t * slong_type;
+extern type_checker_type_t * slonglong_type;
+extern type_checker_type_t * float_type;
+extern type_checker_type_t * double_type;
+
 void type_checker_registry_init(type_checker_registry_t * tr);
 void type_checker_registry_free(type_checker_registry_t * tr);
 

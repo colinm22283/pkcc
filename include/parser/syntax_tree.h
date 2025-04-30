@@ -31,6 +31,7 @@ typedef struct syntax_tree_node_list_node_s {
     };
 
     type_checker_type_t * type;
+    type_checker_type_t * desired_type;
 
     struct syntax_tree_node_list_node_s * prev;
     struct syntax_tree_node_list_node_s * next;
@@ -39,10 +40,11 @@ typedef struct syntax_tree_node_list_node_s {
 typedef struct {
     syntax_tree_node_t head;
 
+    line_buffer_t * line_buffer;
     token_buffer_t * token_buffer;
 } syntax_tree_t;
 
-void syntax_tree_init(syntax_tree_t * syntax_tree, token_buffer_t * token_buffer);
+void syntax_tree_init(syntax_tree_t * syntax_tree, line_buffer_t * line_buffer, token_buffer_t * token_buffer);
 void syntax_tree_free(syntax_tree_t * syntax_tree);
 
 void syntax_tree_parse(syntax_tree_t * syntax_tree);

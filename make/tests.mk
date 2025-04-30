@@ -14,5 +14,5 @@ valgrind-%: debug
 	cd $(TESTS_DIR) && $(MAKE) valgrind-$*
 
 .PHONY: tests
-tests: $(BUILD_DIR)/pkcc
+tests: clean debug
 	cd $(TESTS_DIR) && $(MAKE) tests

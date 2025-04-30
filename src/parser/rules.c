@@ -47,7 +47,7 @@ rule_token_t decl_var_decl_tokens[] = {
 };
 rule_token_t decl_var_decl_equal_tokens[] = {
     DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_DIRECT_ASSIGNMENT)),
-    DEFINE_NONTERMINAL_RULE_TOKEN(NT_EXPRESSION),
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_EXPRESSION_LEVEL_14),
 };
 
 rule_token_t decl_var_decl_array_tokens[] = {
@@ -475,11 +475,9 @@ rule_token_t expression_level_2_sizeof_type_tokens[] = {
     DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_PAREN_OPEN)),
     DEFINE_NONTERMINAL_RULE_TOKEN(NT_TYPE),
     DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_PAREN_CLOSE)),
-    DEFINE_NONTERMINAL_RULE_TOKEN(NT_EXPRESSION_LEVEL_2),
 };
 rule_token_t expression_level_2_sizeof_expr_tokens[] = {
     DEFINE_TERMINAL_RULE_TOKEN(token_number_keyword(SCANNER_KEYWORD_TYPE_SIZEOF)),
-    DEFINE_NONTERMINAL_RULE_TOKEN(NT_EXPRESSION),
     DEFINE_NONTERMINAL_RULE_TOKEN(NT_EXPRESSION_LEVEL_2),
 };
 
@@ -625,6 +623,7 @@ rule_t all_rules[RULE_COUNT] = {
     DEFINE_RULE(NT_DECL_VAR_LIST, empty_tokens),
 
     DEFINE_RULE(NT_DECL_VAR_DECL, decl_var_decl_tokens),
+
     DEFINE_RULE(NT_DECL_VAR_DECL_EQUAL, decl_var_decl_equal_tokens),
     DEFINE_RULE(NT_DECL_VAR_DECL_EQUAL, empty_tokens),
 

@@ -24,25 +24,10 @@ void type_checker_run_recur(type_checker_t * tc, syntax_tree_node_t * node) {
 
     while (list_node != node->tail) {
         if (list_node->token_type == RT_NONTERMINAL) {
-            switch (list_node->nonterminal.nonterminal) {
-                case NT_STRUCT: {
-                    type_checker_registry_parse(&tc->type_registry, tc->line_buffer, tc->token_buffer, list_node);
-                } break;
-
-                case NT_DECL_VAR: {
-                    list_node->type = type_checker_registry_parse(
-                        &tc->type_registry,
-                        tc->line_buffer,
-                        tc->token_buffer,
-                        list_node->nonterminal.tree.head->next
-                    );
-                } break;
-
-                default: {
-                    type_checker_run_recur(tc, &list_node->nonterminal.tree);
-                } break;
-            }
+            type_checker_run_recur(tc, &list_node->nonterminal.tree);
         }
+
+        list_node->type = type_checker_registry_parse(&tc->type_registry, tc->line_buffer, tc->token_buffer, list_node);
 
         list_node = list_node->next;
     }
@@ -50,4 +35,6 @@ void type_checker_run_recur(type_checker_t * tc, syntax_tree_node_t * node) {
 
 void type_checker_run(type_checker_t * tc) {
     type_checker_run_recur(tc, &tc->syntax_tree->head);
+
+
 }

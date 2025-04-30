@@ -1,5 +1,4 @@
-struct test_s {
-    int a;
-} d;
+int main() {
+    return 2 * 3UL / 0.3f * 1 + 56;
+}
 
-struct test_s e;

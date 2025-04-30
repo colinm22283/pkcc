@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 #include <parser/rule.h>
 
 #define RULE_COUNT (157)
@@ -237,5 +239,31 @@ static inline const char * rules_nonterminal_report_name(nonterminal_t nontermin
         case NT_QUALIFIER: return "qualifier";
 
         default: return "UNKNOWN";
+    }
+}
+
+static inline bool nonterminal_is_expression(nonterminal_t nonterminal) {
+    switch (nonterminal) {
+        case NT_EXPRESSION:
+        case NT_EXPRESSION_LEVEL_15:
+        case NT_EXPRESSION_LEVEL_14:
+        case NT_EXPRESSION_LEVEL_13:
+        case NT_EXPRESSION_LEVEL_12:
+        case NT_EXPRESSION_LEVEL_11:
+        case NT_EXPRESSION_LEVEL_10:
+        case NT_EXPRESSION_LEVEL_9:
+        case NT_EXPRESSION_LEVEL_8:
+        case NT_EXPRESSION_LEVEL_7:
+        case NT_EXPRESSION_LEVEL_6:
+        case NT_EXPRESSION_LEVEL_5:
+        case NT_EXPRESSION_LEVEL_4:
+        case NT_EXPRESSION_LEVEL_3:
+        case NT_EXPRESSION_LEVEL_2:
+        case NT_EXPRESSION_LEVEL_1:
+        case NT_EXPRESSION_LEVEL_0:
+            return true;
+
+        default:
+            return false;
     }
 }

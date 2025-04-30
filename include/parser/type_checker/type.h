@@ -78,3 +78,5 @@ typedef struct type_checker_type_s {
 
 void type_checker_type_free(type_checker_type_t * type);
 char * type_checker_type_stringify(type_checker_type_t * type);
+
+type_checker_type_t * type_checker_type_expand(type_checker_type_t * a, type_checker_type_t * b);

@@ -5,7 +5,7 @@
 void parser_init(parser_t * parser, scanner_t * scanner, line_buffer_t * line_buffer) {
     log_printf("Initializing parser\n");
 
-    syntax_tree_init(&parser->syntax_tree, &scanner->tb);
+    syntax_tree_init(&parser->syntax_tree, line_buffer, &scanner->tb);
 
     type_checker_init(&parser->type_checker, line_buffer, &parser->syntax_tree, &scanner->tb);
 }

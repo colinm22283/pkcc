@@ -13,7 +13,8 @@ INCLUDE_DIRS=include
 all: $(BUILD_DIR)/pkcc
 
 .PHONY: debug
-debug: CFLAGS+=-g -O0
+debug: CFLAGS+=-g
+debug: OPTIMIZATION=0
 debug: all
 
 export OBJS=
