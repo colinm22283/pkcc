@@ -55,6 +55,9 @@ typedef struct {
         } pointer;
 
         struct {
+            bool has_size;
+            size_t size;
+
             struct type_checker_type_s * subtype;
         } array;
 
@@ -80,3 +83,5 @@ void type_checker_type_free(type_checker_type_t * type);
 char * type_checker_type_stringify(type_checker_type_t * type);
 
 type_checker_type_t * type_checker_type_expand(type_checker_type_t * a, type_checker_type_t * b);
+
+bool type_checker_type_equal(type_checker_type_t * a, type_checker_type_t * b);

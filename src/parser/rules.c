@@ -214,6 +214,7 @@ rule_token_t expression_level_15_tokens[] = {
 };
 rule_token_t expression_level_15_comma_tokens[] = {
     DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_COMMA)),
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_EXPRESSION_LEVEL_14),
     DEFINE_NONTERMINAL_RULE_TOKEN(NT_EXPRESSION_LEVEL_15_PRIME),
 };
 
@@ -644,8 +645,8 @@ rule_t all_rules[RULE_COUNT] = {
     DEFINE_RULE(NT_CODE_LIST, code_list_tokens),
     DEFINE_RULE(NT_CODE_LIST, empty_tokens),
 
-    DEFINE_RULE(NT_CODE_LINE, code_line_var),
     DEFINE_RULE(NT_CODE_LINE, code_line_expression),
+    DEFINE_RULE(NT_CODE_LINE, code_line_var),
     DEFINE_RULE(NT_CODE_LINE, code_line_block),
 
     DEFINE_RULE(NT_STATEMENT, statement_empty_tokens),

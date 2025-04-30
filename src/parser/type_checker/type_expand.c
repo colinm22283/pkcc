@@ -5,6 +5,8 @@
 size_t type_sizes[] = {
     [BTT_VOID] = 0,
 
+    [BTT_BOOL] = 8,
+
     [BTT_CHAR] = 1,
     [BTT_SHORT] = 2,
     [BTT_INT] = 3,

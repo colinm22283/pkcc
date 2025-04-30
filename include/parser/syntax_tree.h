@@ -6,6 +6,7 @@
 
 #include <parser/rule.h>
 #include <parser/type_checker/type.h>
+#include <parser/type_checker/scope.h>
 
 struct syntax_tree_node_list_node_s;
 
@@ -30,6 +31,7 @@ typedef struct syntax_tree_node_list_node_s {
         } terminal;
     };
 
+    type_checker_scope_t * scope;
     type_checker_type_t * type;
     type_checker_type_t * desired_type;
 

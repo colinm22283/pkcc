@@ -208,6 +208,8 @@ void syntax_tree_print_recur(token_buffer_t * token_buffer, syntax_tree_node_t *
                 token_stringify(token_string, &token_buffer->tokens[n->terminal.position]);
                 printf("%s (line %zu)", token_string, token_buffer->tokens[n->terminal.position].line_index + 1);
 
+                printf("        DEPTH: '%zu'", n->scope->depth);
+
                 if (n->type != NULL) {
                     char * type_string = type_checker_type_stringify(n->type);
 
@@ -231,6 +233,8 @@ void syntax_tree_print_recur(token_buffer_t * token_buffer, syntax_tree_node_t *
                 for (size_t i = 0; i < indent; i++) printf("│ ");
 
                 printf("%s ", rules_nonterminal_name(n->nonterminal.nonterminal));
+
+                printf("        DEPTH: '%zu'", n->scope->depth);
 
                 if (n->type != NULL) {
                     char * type_string = type_checker_type_stringify(n->type);

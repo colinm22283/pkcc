@@ -21,7 +21,5 @@ void parser_free(parser_t * parser) {
 void parser_run(parser_t * parser) {
     syntax_tree_parse(&parser->syntax_tree);
 
-    if (options.dump_tree) syntax_tree_print(&parser->syntax_tree);
-
     type_checker_run(&parser->type_checker);
 }

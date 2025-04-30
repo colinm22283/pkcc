@@ -1,4 +1,5 @@
 int main() {
-    return 2 * 3UL / 0.3f * 1 + 56;
-}
+    int b[];
 
+    int a = b;
+}

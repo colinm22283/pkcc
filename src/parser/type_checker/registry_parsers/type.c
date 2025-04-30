@@ -3,6 +3,7 @@
 #include <parser/type_checker/registry_parsers/type.h>
 
 #include <debug/log.h>
+#include <debug/line_error.h>
 
 #include <alloc.h>
 
@@ -123,6 +124,7 @@ type_checker_type_t * type_checker_registry_parse_type(
             tr->entries = pkcc_realloc(tr->entries, tr->capacity * sizeof(type_checker_registry_entry_t *));
         }
 
+        qualifier_entry->scope = inner_type_node->scope;
         qualifier_entry->type.is_base = false;
         qualifier_entry->type.derived_type.qualified.qualifiers = pkcc_realloc(qualifiers, qualifier_count * sizeof(type_checker_derived_type_qualifier_t));
         qualifier_entry->type.derived_type.qualified.qualifier_count = qualifier_count;
@@ -132,6 +134,7 @@ type_checker_type_t * type_checker_registry_parse_type(
     }
     else pkcc_free(qualifiers);
 
+    entry->scope = inner_type_node->scope;
     entry->type.is_base = true;
 
     syntax_tree_node_list_node_t * inner_type_sub_node = inner_type_node->nonterminal.tree.head->next;
@@ -148,7 +151,14 @@ type_checker_type_t * type_checker_registry_parse_type(
             case token_number_keyword(SCANNER_KEYWORD_TYPE_DOUBLE): entry->type.base_type.type = BTT_DOUBLE; break;
             // TODO: long long
 
-            default: fatal_error("Unknown type received\n");
+            default:
+                fatal_line_full_error(
+                    line_buffer,
+                    token_buffer->tokens[inner_type_sub_node->terminal.position].file_name,
+                    "Unknown type received",
+                    token_buffer->tokens[inner_type_sub_node->terminal.position].line_index
+                );
+                break;
         }
 
         entry->type.base_type.sign = BTS_SIGNED; // TODO: support unsigned

@@ -3,12 +3,16 @@
 #include <parser/syntax_tree.h>
 #include <parser/type_checker/type.h>
 #include <parser/type_checker/type_registry.h>
+#include <parser/type_checker/scope_registry.h>
+#include <parser/type_checker/variable_registry.h>
 
 typedef struct {
     syntax_tree_t * syntax_tree;
     line_buffer_t * line_buffer;
     token_buffer_t * token_buffer;
 
+    type_checker_scope_registry_t scope_registry;
+    type_checker_variable_registry_t variable_registry;
     type_checker_registry_t type_registry;
 } type_checker_t;
 

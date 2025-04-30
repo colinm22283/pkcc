@@ -18,7 +18,10 @@ type_checker_type_t * type_checker_registry_parse_struct(
     syntax_tree_node_list_node_t * struct_member_list_node;
 
     bool already_declared = false;
+    type_checker_scope_t * this_scope = struct_node->scope;
+
     type_checker_registry_entry_t * entry = pkcc_alloc(sizeof(type_checker_registry_entry_t));
+    entry->scope = this_scope;
     entry->type.is_base = false;
     entry->type.derived_type.type = DTT_STRUCT;
 
@@ -40,14 +43,21 @@ type_checker_type_t * type_checker_registry_parse_struct(
                     if (tr->entries[i]->type.derived_type.type == DTT_STRUCT) {
                         if (tr->entries[i]->type.derived_type.structure.name != NULL) {
                             if (strcmp(tr->entries[i]->type.derived_type.structure.name, struct_name) == 0) {
-                                log_printf("Struct already defined\n");
+                                log_printf("Matching struct def found SCOPE LEVELS: %zu, %zu\n", tr->entries[i]->scope->depth, this_scope->depth);
 
-                                already_declared = true;
+                                if (
+                                    (tr->entries[i]->scope->depth == 0 && this_scope->depth == 0) ||
+                                    (tr->entries[i]->scope->depth != 0 && this_scope->depth != 0)
+                                ) {
+                                    log_printf("Struct already defined\n");
 
-                                pkcc_free(entry);
-                                entry = tr->entries[i];
+                                    already_declared = true;
 
-                                break;
+                                    pkcc_free(entry);
+                                    entry = tr->entries[i];
+
+                                    break;
+                                }
                             }
                         }
                     }
@@ -90,13 +100,15 @@ type_checker_type_t * type_checker_registry_parse_struct(
     ) {
         log_printf("Got member list\n");
 
-        if (already_declared && entry->type.derived_type.structure.subtypes != NULL) {
+        if (
+            already_declared &&
+            entry->type.derived_type.structure.subtypes != NULL
+        ) {
             fatal_line_full_error(
                 line_buffer,
                 token_buffer->tokens[struct_node->nonterminal.tree.head->next->terminal.position].file_name,
                 "Struct defined multiple times",
-                token_buffer->tokens[struct_node->nonterminal.tree.head->next->terminal.position].line_index,
-                token_buffer->tokens[struct_node->nonterminal.tree.head->next->terminal.position].position
+                token_buffer->tokens[struct_node->nonterminal.tree.head->next->terminal.position].line_index
             );
         }
 

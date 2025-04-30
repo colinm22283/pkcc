@@ -73,7 +73,15 @@ char * type_checker_type_stringify(type_checker_type_t * type) {
                 }
             } break;
 
-            default: fatal_error("Unimlemented in stringify");
+            case DTT_ARRAY: {
+                char * type_string = type_checker_type_stringify(type->derived_type.qualified.subtype);
+                PUSH_STR(type_string);
+                pkcc_free(type_string);
+
+                PUSH_STR("[]");
+            } break;
+
+            default: fatal_error("Unimplemented in stringify\n");
         }
     }
 

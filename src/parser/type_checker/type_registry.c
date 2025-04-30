@@ -1,11 +1,13 @@
 #include <string.h>
 
 #include <parser/rules.h>
+#include <parser/type_checker/scope_registry.h>
 #include <parser/type_checker/type_registry.h>
 #include <parser/type_checker/registry_parsers/struct.h>
 #include <parser/type_checker/registry_parsers/type.h>
 #include <parser/type_checker/registry_parsers/expression.h>
 #include <parser/type_checker/registry_parsers/terminal.h>
+#include <parser/type_checker/registry_parsers/decl_var.h>
 
 #include <alloc.h>
 
@@ -44,6 +46,7 @@ void type_checker_registry_init(type_checker_registry_t * tr) {
 
     {
         type_checker_registry_entry_t * entry = add_entry(tr);
+        entry->scope = root_scope;
         entry->type.is_base = true;
         entry->type.base_type.type = BTT_VOID;
         entry->type.base_type.sign = BTS_UNSIGNED;
@@ -51,6 +54,7 @@ void type_checker_registry_init(type_checker_registry_t * tr) {
     }
     {
         type_checker_registry_entry_t * entry = add_entry(tr);
+        entry->scope = root_scope;
         entry->type.is_base = true;
         entry->type.base_type.type = BTT_BOOL;
         entry->type.base_type.sign = BTS_UNSIGNED;
@@ -58,6 +62,7 @@ void type_checker_registry_init(type_checker_registry_t * tr) {
     }
     {
         type_checker_registry_entry_t * entry = add_entry(tr);
+        entry->scope = root_scope;
         entry->type.is_base = true;
         entry->type.base_type.type = BTT_CHAR;
         entry->type.base_type.sign = BTS_UNSIGNED;
@@ -65,6 +70,7 @@ void type_checker_registry_init(type_checker_registry_t * tr) {
     }
     {
         type_checker_registry_entry_t * entry = add_entry(tr);
+        entry->scope = root_scope;
         entry->type.is_base = true;
         entry->type.base_type.type = BTT_SHORT;
         entry->type.base_type.sign = BTS_UNSIGNED;
@@ -72,6 +78,7 @@ void type_checker_registry_init(type_checker_registry_t * tr) {
     }
     {
         type_checker_registry_entry_t * entry = add_entry(tr);
+        entry->scope = root_scope;
         entry->type.is_base = true;
         entry->type.base_type.type = BTT_INT;
         entry->type.base_type.sign = BTS_UNSIGNED;
@@ -79,6 +86,7 @@ void type_checker_registry_init(type_checker_registry_t * tr) {
     }
     {
         type_checker_registry_entry_t * entry = add_entry(tr);
+        entry->scope = root_scope;
         entry->type.is_base = true;
         entry->type.base_type.type = BTT_LONG;
         entry->type.base_type.sign = BTS_UNSIGNED;
@@ -86,6 +94,7 @@ void type_checker_registry_init(type_checker_registry_t * tr) {
     }
     {
         type_checker_registry_entry_t * entry = add_entry(tr);
+        entry->scope = root_scope;
         entry->type.is_base = true;
         entry->type.base_type.type = BTT_LONG_LONG;
         entry->type.base_type.sign = BTS_UNSIGNED;
@@ -93,6 +102,7 @@ void type_checker_registry_init(type_checker_registry_t * tr) {
     }
     {
         type_checker_registry_entry_t * entry = add_entry(tr);
+        entry->scope = root_scope;
         entry->type.is_base = true;
         entry->type.base_type.type = BTT_CHAR;
         entry->type.base_type.sign = BTS_SIGNED;
@@ -100,6 +110,7 @@ void type_checker_registry_init(type_checker_registry_t * tr) {
     }
     {
         type_checker_registry_entry_t * entry = add_entry(tr);
+        entry->scope = root_scope;
         entry->type.is_base = true;
         entry->type.base_type.type = BTT_SHORT;
         entry->type.base_type.sign = BTS_SIGNED;
@@ -107,6 +118,7 @@ void type_checker_registry_init(type_checker_registry_t * tr) {
     }
     {
         type_checker_registry_entry_t * entry = add_entry(tr);
+        entry->scope = root_scope;
         entry->type.is_base = true;
         entry->type.base_type.type = BTT_INT;
         entry->type.base_type.sign = BTS_SIGNED;
@@ -114,6 +126,7 @@ void type_checker_registry_init(type_checker_registry_t * tr) {
     }
     {
         type_checker_registry_entry_t * entry = add_entry(tr);
+        entry->scope = root_scope;
         entry->type.is_base = true;
         entry->type.base_type.type = BTT_LONG;
         entry->type.base_type.sign = BTS_SIGNED;
@@ -121,6 +134,7 @@ void type_checker_registry_init(type_checker_registry_t * tr) {
     }
     {
         type_checker_registry_entry_t * entry = add_entry(tr);
+        entry->scope = root_scope;
         entry->type.is_base = true;
         entry->type.base_type.type = BTT_LONG_LONG;
         entry->type.base_type.sign = BTS_SIGNED;
@@ -128,6 +142,7 @@ void type_checker_registry_init(type_checker_registry_t * tr) {
     }
     {
         type_checker_registry_entry_t * entry = add_entry(tr);
+        entry->scope = root_scope;
         entry->type.is_base = true;
         entry->type.base_type.type = BTT_FLOAT;
         entry->type.base_type.sign = BTS_SIGNED;
@@ -135,6 +150,7 @@ void type_checker_registry_init(type_checker_registry_t * tr) {
     }
     {
         type_checker_registry_entry_t * entry = add_entry(tr);
+        entry->scope = root_scope;
         entry->type.is_base = true;
         entry->type.base_type.type = BTT_DOUBLE;
         entry->type.base_type.sign = BTS_SIGNED;
@@ -152,8 +168,13 @@ void type_checker_registry_free(type_checker_registry_t * tr) {
     pkcc_free(tr->entries);
 }
 
-type_checker_type_t * type_checker_registry_parse(type_checker_registry_t * tr, line_buffer_t * line_buffer, token_buffer_t * token_buffer, syntax_tree_node_list_node_t * node) {
-    // TODO: parse the syntax tree
+type_checker_type_t * type_checker_registry_parse(
+    type_checker_registry_t * tr,
+    type_checker_variable_registry_t * vr,
+    line_buffer_t * line_buffer,
+    token_buffer_t * token_buffer,
+    syntax_tree_node_list_node_t * node
+) {
     if (node->token_type == RT_NONTERMINAL) {
         switch (node->nonterminal.nonterminal) {
             case NT_STRUCT: {
@@ -164,9 +185,13 @@ type_checker_type_t * type_checker_registry_parse(type_checker_registry_t * tr, 
                 return type_checker_registry_parse_type(tr, line_buffer, token_buffer, node);
             } break;
 
+            case NT_DECL_VAR: {
+                return type_checker_registry_parse_decl_var(tr, vr, line_buffer, token_buffer, node);
+            } break;
+
             default: {
                 if (nonterminal_is_expression(node->nonterminal.nonterminal)) {
-                    return type_checker_registry_parse_expression(tr, line_buffer, token_buffer, node);
+                    return type_checker_registry_parse_expression(tr, vr, line_buffer, token_buffer, node);
                 }
             } break;
         }
