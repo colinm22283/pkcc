@@ -13,7 +13,7 @@ bool type_checker_type_equal(type_checker_type_t * a, type_checker_type_t * b) {
         switch (a->derived_type.type) {
             case DTT_ARRAY: {
                 if (a->derived_type.array.has_size != b->derived_type.array.has_size) return false;
-                if (a->derived_type.array.size != b->derived_type.array.size) return false;
+                if (a->derived_type.array.has_size && a->derived_type.array.size != b->derived_type.array.size) return false;
                 if (!type_checker_type_equal(a->derived_type.array.subtype, b->derived_type.array.subtype)) return false;
             } break;
 
@@ -38,6 +38,16 @@ bool type_checker_type_equal(type_checker_type_t * a, type_checker_type_t * b) {
                     }
                 }
             } break;
+
+            case DTT_FUNCTION: {
+                if (a->derived_type.function.arg_count != b->derived_type.function.arg_count) return false;
+                if (!type_checker_type_equal(a->derived_type.function.return_type, b->derived_type.function.return_type)) return false;
+                for (size_t i = 0; i < a->derived_type.function.arg_count; i++) {
+                    if (!type_checker_type_equal(a->derived_type.function.args[i], b->derived_type.function.args[i])) {
+                        return false;
+                    }
+                }
+            }
         }
     }
     else return false;

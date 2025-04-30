@@ -2,7 +2,7 @@
 
 #include <debug/error_handler.h>
 
-size_t type_sizes[] = {
+size_t type_checker_type_sizes[9] = {
     [BTT_VOID] = 0,
 
     [BTT_BOOL] = 8,
@@ -42,8 +42,8 @@ type_checker_type_t * type_checker_type_expand(type_checker_type_t * a, type_che
     }
     else _b = b;
 
-    size_t a_size = type_sizes[_a->base_type.type];
-    size_t b_size = type_sizes[_b->base_type.type];
+    size_t a_size = type_checker_type_sizes[_a->base_type.type];
+    size_t b_size = type_checker_type_sizes[_b->base_type.type];
 
     if (a_size > b_size) return _a;
     else return _b;

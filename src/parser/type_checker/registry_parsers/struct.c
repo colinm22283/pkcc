@@ -37,6 +37,8 @@ type_checker_type_t * type_checker_registry_parse_struct(
 
         log_printf("Got struct with name: %s\n", struct_name);
 
+        struct_member_list_node = struct_name_node->next;
+
         for (size_t i = 0; i < tr->size; i++) {
             if (tr->entries[i] != entry) {
                 if (!tr->entries[i]->type.is_base) {
@@ -46,8 +48,15 @@ type_checker_type_t * type_checker_registry_parse_struct(
                                 log_printf("Matching struct def found SCOPE LEVELS: %zu, %zu\n", tr->entries[i]->scope->depth, this_scope->depth);
 
                                 if (
-                                    (tr->entries[i]->scope->depth == 0 && this_scope->depth == 0) ||
-                                    (tr->entries[i]->scope->depth != 0 && this_scope->depth != 0)
+                                    !(
+                                        struct_member_list_node != struct_node->nonterminal.tree.tail &&
+                                        struct_member_list_node->token_type == RT_NONTERMINAL &&
+                                        struct_member_list_node->nonterminal.nonterminal == NT_STRUCT_MEMBER_LIST
+                                    ) ||
+                                    (
+                                        (tr->entries[i]->scope->depth == 0 && this_scope->depth == 0) ||
+                                        (tr->entries[i]->scope->depth != 0 && this_scope->depth != 0)
+                                    )
                                 ) {
                                     log_printf("Struct already defined\n");
 
@@ -64,8 +73,6 @@ type_checker_type_t * type_checker_registry_parse_struct(
                 }
             }
         }
-
-        struct_member_list_node = struct_name_node->next;
 
         if (!already_declared) {
             entry->type.derived_type.structure.name = pkcc_alloc(strlen(struct_name) + 1);
@@ -95,6 +102,7 @@ type_checker_type_t * type_checker_registry_parse_struct(
     }
 
     if (
+        struct_member_list_node != struct_node->nonterminal.tree.tail &&
         struct_member_list_node->token_type == RT_NONTERMINAL &&
         struct_member_list_node->nonterminal.nonterminal == NT_STRUCT_MEMBER_LIST
     ) {
@@ -115,6 +123,7 @@ type_checker_type_t * type_checker_registry_parse_struct(
 
         size_t member_type_count = 0, member_type_capacity = 2;
         type_checker_type_t ** member_types = pkcc_alloc(member_type_capacity * sizeof(type_checker_type_t *));
+        char ** member_names = pkcc_alloc(member_type_capacity * sizeof(char *));
 
         if (struct_member_list_node->nonterminal.tree.head->next->next->next != struct_member_list_node->nonterminal.tree.tail) {
             syntax_tree_node_list_node_t * member_node = struct_member_list_node->nonterminal.tree.head->next->next;
@@ -131,14 +140,43 @@ type_checker_type_t * type_checker_registry_parse_struct(
                 if (member_decl_type_node->token_type != RT_NONTERMINAL) fatal_error("Internal: Struct member type not nonterminal\n");
                 if (member_decl_type_node->nonterminal.nonterminal != NT_TYPE) fatal_error("Internal: Struct member type not correct nonterminal\n");
 
-                type_checker_type_t * type = member_decl_type_node->type;
+                syntax_tree_node_list_node_t * member_decl_name_list_node = member_decl_type_node->next;
+
+                while (true) {
+                    if (
+                        member_decl_name_list_node != member_node->nonterminal.tree.tail &&
+                        member_decl_name_list_node->token_type == RT_NONTERMINAL
+                    ) {
+                        syntax_tree_node_list_node_t * member_decl_var_decl_node = member_decl_name_list_node->nonterminal.tree.head->next;
+                        if (member_decl_var_decl_node->token_type == RT_TERMINAL) member_decl_var_decl_node = member_decl_var_decl_node->next;
+
+                        syntax_tree_node_list_node_t * member_decl_name_node = member_decl_var_decl_node->nonterminal.tree.head->next;
+
+                        member_names[member_type_count] = pkcc_alloc(strlen(token_buffer->tokens[member_decl_name_node->terminal.position].identifier_data->name) + 1);
+                        strcpy(member_names[member_type_count], token_buffer->tokens[member_decl_name_node->terminal.position].identifier_data->name);
+                    }
+                    else {
+                        member_names[member_type_count] = NULL;
+                    }
+
+                    type_checker_type_t * type = member_decl_type_node->type;
 
                     member_types[member_type_count++] = type;
 
-                if (member_type_count == member_type_capacity) {
-                    member_type_capacity *= 2;
+                    if (member_type_count == member_type_capacity) {
+                        member_type_capacity *= 2;
 
-                    member_types = pkcc_realloc(member_types, member_type_capacity * sizeof(type_checker_type_t *));
+                        member_names = pkcc_realloc(member_names, member_type_capacity * sizeof(char *));
+                        member_types = pkcc_realloc(member_types, member_type_capacity * sizeof(type_checker_type_t *));
+                    }
+
+                    if (
+                        member_decl_name_list_node->nonterminal.tree.tail->prev->token_type == RT_NONTERMINAL &&
+                        member_decl_name_list_node->nonterminal.tree.tail->prev->nonterminal.nonterminal == NT_DECL_VAR_LIST
+                    ) {
+                        member_decl_name_list_node = member_decl_name_list_node->nonterminal.tree.tail->prev;
+                    }
+                    else break;
                 }
 
                 if (member_decl_node->next->next != member_node->nonterminal.tree.tail) {
@@ -148,6 +186,7 @@ type_checker_type_t * type_checker_registry_parse_struct(
             }
         }
 
+        entry->type.derived_type.structure.subtype_names = member_names;
         entry->type.derived_type.structure.subtypes = member_types;
         entry->type.derived_type.structure.subtype_count = member_type_count;
     }

@@ -19,6 +19,7 @@
 #include <parser/parser.h>
 #include <parser/rule_registry.h>
 #include <parser/phase2.h>
+#include <parser/type_checker/phase3.h>
 
 free_list_t free_list;
 
@@ -101,6 +102,26 @@ int main(int argc, const char ** argv) {
 
         FILE * out_file = fopen(options.output_path, "w");
         parser_print_phase2(out_file, &parser);
+        fclose(out_file);
+
+        exit_and_free(0);
+    }
+
+    if (options.phase3) {
+        type_verifier_phase3(
+            stdout,
+            parser.type_checker.line_buffer,
+            parser.type_checker.token_buffer,
+            parser.type_checker.syntax_tree
+        );
+
+        FILE * out_file = fopen(options.output_path, "w");
+        type_verifier_phase3(
+            out_file,
+            parser.type_checker.line_buffer,
+            parser.type_checker.token_buffer,
+            parser.type_checker.syntax_tree
+        );
         fclose(out_file);
 
         exit_and_free(0);

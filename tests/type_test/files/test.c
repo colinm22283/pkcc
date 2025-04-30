@@ -1,5 +1,6 @@
-int main() {
-    int b[];
 
-    int a = b;
+
+int main() {
+    int a;
+    a + 1;
 }

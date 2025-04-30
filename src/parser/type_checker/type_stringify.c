@@ -54,6 +54,11 @@ char * type_checker_type_stringify(type_checker_type_t * type) {
                         PUSH_STR(type_string);
                         pkcc_free(type_string);
 
+                        if (type->derived_type.structure.subtype_names[i] != NULL) {
+                            PUSH_CHAR(' ');
+                            PUSH_STR(type->derived_type.structure.subtype_names[i]);
+                        }
+
                         if (i != type->derived_type.structure.subtype_count - 1) PUSH_STR(", ");
                     }
 
@@ -74,11 +79,31 @@ char * type_checker_type_stringify(type_checker_type_t * type) {
             } break;
 
             case DTT_ARRAY: {
-                char * type_string = type_checker_type_stringify(type->derived_type.qualified.subtype);
+                char * type_string = type_checker_type_stringify(type->derived_type.array.subtype);
                 PUSH_STR(type_string);
                 pkcc_free(type_string);
 
                 PUSH_STR("[]");
+            } break;
+
+            case DTT_FUNCTION: {
+                char * type_string;
+
+                type_string = type_checker_type_stringify(type->derived_type.function.return_type);
+                PUSH_STR(type_string);
+                pkcc_free(type_string);
+
+                PUSH_STR("(");
+
+                for (size_t i = 0; i < type->derived_type.function.arg_count; i++) {
+                    type_string = type_checker_type_stringify(type->derived_type.function.args[i]);
+                    PUSH_STR(type_string);
+                    pkcc_free(type_string);
+
+                    if (i != type->derived_type.function.arg_count - 1) PUSH_STR(", ");
+                }
+
+                PUSH_STR(")");
             } break;
 
             default: fatal_error("Unimplemented in stringify\n");

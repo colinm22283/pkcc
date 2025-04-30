@@ -13,11 +13,11 @@ void type_checker_type_free(type_checker_type_t * type) {
                 pkcc_free(type->derived_type.structure.subtypes);
             } break;
 
-            case DTT_QUALIFIED: {
-
+            case DTT_FUNCTION: {
+                pkcc_free(type->derived_type.function.args);
             } break;
 
-            default: log_printf("ERROR\n");
+            default: break;
         }
     }
 }

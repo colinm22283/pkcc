@@ -101,8 +101,6 @@ type_checker_type_t * type_checker_registry_parse_decl_var(
         else {
             log_printf("Previous definition found\n");
 
-            log_printf("TEST: %s, %s\n", type_checker_type_stringify(variable->type), type_checker_type_stringify(decl_type));
-
             if (!type_checker_type_equal(variable->type, decl_type)) {
                 fatal_line_full_error(
                     line_buffer,

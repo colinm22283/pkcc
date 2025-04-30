@@ -5,6 +5,7 @@
 #include <parser/type_checker/type_registry.h>
 #include <parser/type_checker/scope_registry.h>
 #include <parser/type_checker/variable_registry.h>
+#include <parser/type_checker/type_verifier.h>
 
 typedef struct {
     syntax_tree_t * syntax_tree;

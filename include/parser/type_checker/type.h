@@ -37,6 +37,7 @@ typedef enum {
     DTT_POINTER,
     DTT_ARRAY,
     DTT_STRUCT,
+    DTT_FUNCTION,
 } type_checker_derived_type_type_t;
 
 typedef struct {
@@ -65,8 +66,15 @@ typedef struct {
             char * name;
 
             size_t subtype_count;
+            char ** subtype_names;
             struct type_checker_type_s ** subtypes;
         } structure;
+
+        struct {
+            size_t arg_count;
+            struct type_checker_type_s ** args;
+            struct type_checker_type_s * return_type;
+        } function;
     };
 } type_checker_derived_type_t;
 
@@ -79,9 +87,19 @@ typedef struct type_checker_type_s {
     };
 } type_checker_type_t;
 
+extern size_t type_checker_type_sizes[9];
+
 void type_checker_type_free(type_checker_type_t * type);
 char * type_checker_type_stringify(type_checker_type_t * type);
 
 type_checker_type_t * type_checker_type_expand(type_checker_type_t * a, type_checker_type_t * b);
 
 bool type_checker_type_equal(type_checker_type_t * a, type_checker_type_t * b);
+
+typedef enum {
+    TCR_CONVERTABLE,
+    TCR_NOT_CONVERTABLE,
+    TCR_NARROWING,
+} type_checker_type_convertable_result_t;
+
+type_checker_type_convertable_result_t type_checker_type_convertable(type_checker_type_t * to, type_checker_type_t * from);

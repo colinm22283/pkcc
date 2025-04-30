@@ -23,15 +23,40 @@ void type_checker_free(type_checker_t * tc) {
     type_checker_scope_registry_free(&tc->scope_registry);
 }
 
-void type_checker_run_recur(type_checker_t * tc, syntax_tree_node_t * node) {
+void type_checker_run_recur_phase1(type_checker_t * tc, syntax_tree_node_t * node) {
     syntax_tree_node_list_node_t * list_node = node->head->next;
 
     while (list_node != node->tail) {
         if (list_node->token_type == RT_NONTERMINAL) {
-            type_checker_run_recur(tc, &list_node->nonterminal.tree);
-        }
+            type_checker_run_recur_phase1(tc, &list_node->nonterminal.tree);
 
-        list_node->type = type_checker_registry_parse(&tc->type_registry, &tc->variable_registry, tc->line_buffer, tc->token_buffer, list_node);
+            if (
+                list_node->nonterminal.nonterminal == NT_TYPE ||
+                list_node->nonterminal.nonterminal == NT_TYPE_VOID ||
+                list_node->nonterminal.nonterminal == NT_STRUCT ||
+                list_node->nonterminal.nonterminal == NT_DECL_FUNC
+            ) list_node->type = type_checker_registry_parse(&tc->type_registry, &tc->variable_registry, tc->line_buffer, tc->token_buffer, list_node);
+        }
+        else list_node->type = type_checker_registry_parse(&tc->type_registry, &tc->variable_registry, tc->line_buffer, tc->token_buffer, list_node);
+
+        list_node = list_node->next;
+    }
+}
+
+void type_checker_run_recur_phase2(type_checker_t * tc, syntax_tree_node_t * node) {
+    syntax_tree_node_list_node_t * list_node = node->head->next;
+
+    while (list_node != node->tail) {
+        if (list_node->token_type == RT_NONTERMINAL) {
+            type_checker_run_recur_phase2(tc, &list_node->nonterminal.tree);
+
+            if (
+                list_node->nonterminal.nonterminal != NT_TYPE &&
+                list_node->nonterminal.nonterminal != NT_TYPE_VOID &&
+                list_node->nonterminal.nonterminal != NT_STRUCT &&
+                list_node->nonterminal.nonterminal != NT_DECL_FUNC
+            ) list_node->type = type_checker_registry_parse(&tc->type_registry, &tc->variable_registry, tc->line_buffer, tc->token_buffer, list_node);
+        }
 
         list_node = list_node->next;
     }
@@ -42,5 +67,9 @@ void type_checker_run(type_checker_t * tc) {
 
     if (options.dump_tree) syntax_tree_print(tc->syntax_tree);
 
-    type_checker_run_recur(tc, &tc->syntax_tree->head);
+    type_checker_run_recur_phase1(tc, &tc->syntax_tree->head);
+
+    type_checker_run_recur_phase2(tc, &tc->syntax_tree->head);
+
+    type_verifier_run(tc->line_buffer, tc->token_buffer, tc->syntax_tree);
 }

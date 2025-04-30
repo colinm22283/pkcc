@@ -47,7 +47,10 @@ void type_checker_scope_registry_run_recur(
         list_node->scope = parent_scope;
 
         if (list_node->token_type == RT_NONTERMINAL) {
-            if (list_node->nonterminal.nonterminal == NT_CODE_BLOCK) {
+            if (
+                list_node->nonterminal.nonterminal == NT_CODE_BLOCK ||
+                list_node->nonterminal.nonterminal == NT_DECL_FUNC
+            ) {
                 type_checker_scope_t * new_scope = add_scope(registry);
                 type_checker_scope_add(parent_scope, new_scope);
                 new_scope->parent = parent_scope;

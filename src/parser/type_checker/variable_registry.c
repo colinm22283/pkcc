@@ -32,15 +32,6 @@ type_checker_variable_t * type_checker_variable_registry_add(type_checker_variab
 type_checker_variable_t * type_checker_variable_registry_lookup(type_checker_variable_registry_t * vr, const char * name, type_checker_scope_t * scope) {
     for (size_t i = 0; i < vr->variable_count; i++) {
         if (
-            vr->variables[i]->scope->depth != 0 &&
-            type_checker_scope_is_parent(vr->variables[i]->scope, scope) &&
-            strcmp(name, vr->variables[i]->name) == 0
-        ) return vr->variables[i];
-    }
-
-    for (size_t i = 0; i < vr->variable_count; i++) {
-        if (
-            vr->variables[i]->scope->depth == 0 &&
             type_checker_scope_is_parent(vr->variables[i]->scope, scope) &&
             strcmp(name, vr->variables[i]->name) == 0
         ) return vr->variables[i];

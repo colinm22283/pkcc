@@ -8,6 +8,7 @@
 #include <parser/type_checker/registry_parsers/expression.h>
 #include <parser/type_checker/registry_parsers/terminal.h>
 #include <parser/type_checker/registry_parsers/decl_var.h>
+#include <parser/type_checker/registry_parsers/decl_func.h>
 
 #include <alloc.h>
 
@@ -185,8 +186,19 @@ type_checker_type_t * type_checker_registry_parse(
                 return type_checker_registry_parse_type(tr, line_buffer, token_buffer, node);
             } break;
 
+            case NT_TYPE_VOID: {
+                if (node->nonterminal.tree.head->next->token_type == RT_NONTERMINAL) {
+                    return node->nonterminal.tree.head->next->type;
+                }
+                else return void_type;
+            } break;
+
             case NT_DECL_VAR: {
                 return type_checker_registry_parse_decl_var(tr, vr, line_buffer, token_buffer, node);
+            } break;
+
+            case NT_DECL_FUNC: {
+                return type_checker_registry_parse_decl_func(tr, vr, line_buffer, token_buffer, node);
             } break;
 
             default: {
