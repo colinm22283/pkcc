@@ -103,3 +103,5 @@ typedef enum {
 } type_checker_type_convertable_result_t;
 
 type_checker_type_convertable_result_t type_checker_type_convertable(type_checker_type_t * to, type_checker_type_t * from);
+
+bool type_checker_type_is_const(type_checker_type_t * type);

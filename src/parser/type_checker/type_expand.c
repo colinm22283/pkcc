@@ -21,6 +21,8 @@ type_checker_type_t * type_checker_type_expand(type_checker_type_t * a, type_che
     if (a == NULL) return NULL;
     if (b == NULL) return NULL;
 
+    if (type_checker_type_equal(a, b)) return a;
+
     type_checker_type_t * _a;
     type_checker_type_t * _b;
 

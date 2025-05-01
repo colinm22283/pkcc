@@ -39,6 +39,7 @@ OBJS+=$(OBJ_DIR)/parser/type_checker/type_registry.o
 OBJS+=$(OBJ_DIR)/parser/type_checker/type_expand.o
 OBJS+=$(OBJ_DIR)/parser/type_checker/type_equal.o
 OBJS+=$(OBJ_DIR)/parser/type_checker/type_convertable.o
+OBJS+=$(OBJ_DIR)/parser/type_checker/type_is_const.o
 OBJS+=$(OBJ_DIR)/parser/type_checker/type_verifier.o
 OBJS+=$(OBJ_DIR)/parser/type_checker/scope_registry.o
 OBJS+=$(OBJ_DIR)/parser/type_checker/variable_registry.o

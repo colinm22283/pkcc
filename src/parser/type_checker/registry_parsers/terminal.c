@@ -29,6 +29,10 @@ type_checker_type_t * type_checker_registry_parse_terminal(
                 case SCANNER_CONSTANT_TYPE_DOUBLE: return double_type;
             }
         } break;
+
+        case token_number_string_literal(): {
+            return schararr_type;
+        } break;
     }
 
     return NULL;

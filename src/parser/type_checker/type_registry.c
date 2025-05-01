@@ -28,6 +28,7 @@ type_checker_type_t * slong_type;
 type_checker_type_t * slonglong_type;
 type_checker_type_t * float_type;
 type_checker_type_t * double_type;
+type_checker_type_t * schararr_type;
 
 static inline type_checker_registry_entry_t * add_entry(type_checker_registry_t * tr) {
     type_checker_registry_entry_t * entry = pkcc_alloc(sizeof(type_checker_registry_entry_t));
@@ -156,6 +157,15 @@ void type_checker_registry_init(type_checker_registry_t * tr) {
         entry->type.base_type.type = BTT_DOUBLE;
         entry->type.base_type.sign = BTS_SIGNED;
         double_type = &entry->type;
+    }
+    {
+        type_checker_registry_entry_t * entry = add_entry(tr);
+        entry->scope = root_scope;
+        entry->type.is_base = false;
+        entry->type.derived_type.type = DTT_ARRAY;
+        entry->type.derived_type.array.subtype = schar_type;
+        entry->type.derived_type.array.has_size = false;
+        schararr_type = &entry->type;
     }
 }
 

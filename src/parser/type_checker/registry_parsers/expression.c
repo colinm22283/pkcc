@@ -94,17 +94,12 @@ type_checker_type_t * expression_level_1_parse(
                                 );
                             }
 
-                            log_printf("TEST: %s\n", type_checker_type_stringify(struct_type));
-
                             const char * member_name = token_buffer->tokens[subnode->next->terminal.position].identifier_data->name;
 
                             bool found = false;
                             size_t location;
-                            log_printf("TEST: %zu\n", struct_type->derived_type.structure.subtype_count);
                             for (location = 0; location < struct_type->derived_type.structure.subtype_count; location++) {
                                 if (struct_type->derived_type.structure.subtype_names[location] != NULL) {
-                                    log_printf("TEST: %s\n", struct_type->derived_type.structure.subtype_names[location]);
-
                                     if (strcmp(member_name, struct_type->derived_type.structure.subtype_names[location]) == 0) {
                                         found = true;
                                         break;
@@ -572,6 +567,8 @@ type_checker_type_t * expression_level_13_parse(
 }
 
 type_checker_type_t * expression_level_14_parse(
+    line_buffer_t * line_buffer,
+    token_buffer_t * token_buffer,
     syntax_tree_node_list_node_t * node,
     syntax_tree_node_list_node_t * tail_node,
     syntax_tree_node_list_node_t * base_node
@@ -595,6 +592,24 @@ type_checker_type_t * expression_level_14_parse(
                         case token_number_punctuation(SCANNER_PUNCTUATION_TYPE_BITWISE_AND_ASSIGNMENT):
                         case token_number_punctuation(SCANNER_PUNCTUATION_TYPE_BITWISE_XOR_ASSIGNMENT):
                         case token_number_punctuation(SCANNER_PUNCTUATION_TYPE_BITWISE_OR_ASSIGNMENT): {
+                            if (type_checker_type_is_const(base_node->type)) {
+                                fatal_line_full_error(
+                                    line_buffer,
+                                    token_buffer->tokens[base_node->nonterminal.position].file_name,
+                                    "Assignment to const",
+                                    token_buffer->tokens[base_node->nonterminal.position].line_index
+                                );
+                            }
+
+                            if (!base_node->type->is_base) {
+                                fatal_line_full_error(
+                                    line_buffer,
+                                    token_buffer->tokens[base_node->nonterminal.position].file_name,
+                                    "Assignment to non-basic type",
+                                    token_buffer->tokens[base_node->nonterminal.position].line_index
+                                );
+                            }
+
                             temp->type = base_node->type;
                             subnode->next->desired_type = base_node->type;
                         } break;
@@ -602,7 +617,7 @@ type_checker_type_t * expression_level_14_parse(
                         default: break;
                     }
 
-                    return expression_level_14_parse(temp->nonterminal.tree.head->next, temp->nonterminal.tree.tail, temp);
+                    return expression_level_14_parse(line_buffer, token_buffer, temp->nonterminal.tree.head->next, temp->nonterminal.tree.tail, temp);
                 }
             }
 
@@ -788,7 +803,7 @@ type_checker_type_t * type_checker_registry_parse_expression(
         } break;
 
         case NT_EXPRESSION_LEVEL_14: {
-            return expression_level_14_parse(subnode->next, expression_node->nonterminal.tree.tail, subnode);
+            return expression_level_14_parse(line_buffer, token_buffer, subnode->next, expression_node->nonterminal.tree.tail, subnode);
         } break;
 
         case NT_EXPRESSION_LEVEL_15: {

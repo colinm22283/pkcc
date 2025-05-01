@@ -30,6 +30,7 @@ extern type_checker_type_t * slong_type;
 extern type_checker_type_t * slonglong_type;
 extern type_checker_type_t * float_type;
 extern type_checker_type_t * double_type;
+extern type_checker_type_t * schararr_type;
 
 void type_checker_registry_init(type_checker_registry_t * tr);
 void type_checker_registry_free(type_checker_registry_t * tr);

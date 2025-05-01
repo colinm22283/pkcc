@@ -1,6 +1,16 @@
+void foo()
+{
+}
 
+void bar()
+{
+}
 
-int main() {
-    int a;
-    a + 1;
+void tests(char t)
+{
+    int A[50];
+    int B[50];
+
+    t ? A : B;
+    t ? foo() : bar();
 }

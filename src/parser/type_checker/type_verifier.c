@@ -1,3 +1,4 @@
+#include <parser/rules.h>
 #include <parser/type_checker/type_verifier.h>
 
 #include <debug/line_error.h>
@@ -16,13 +17,13 @@ void type_verifier_run_recur(line_buffer_t * line_buffer, token_buffer_t * token
                 else token = &token_buffer->tokens[subnode->terminal.position];
 
                 if (convertable_result == TCR_NARROWING) {
-                    line_warning(
-                        line_buffer,
-                        token->file_name,
-                        "Narrowing conversion",
-                        token->line_index,
-                        token->position
-                    );
+//                    line_warning(
+//                        line_buffer,
+//                        token->file_name,
+//                        "Narrowing conversion",
+//                        token->line_index,
+//                        token->position
+//                    );
                 }
                 else if (convertable_result == TCR_NOT_CONVERTABLE) {
                     char * dynamic_desired_str = type_checker_type_stringify(subnode->desired_type);

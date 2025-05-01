@@ -35,16 +35,13 @@ __NORETURN void fatal_line_range_error(line_buffer_t * line_buffer, file_name_en
     exit_and_free(1);
 }
 
-__NORETURN void fatal_formatted_line_range_error_v(line_buffer_t * line_buffer, file_name_entry_t * file_name, size_t line, size_t position, size_t size, const char * message, ...) {
+__NORETURN void fatal_formatted_line_range_error_v(line_buffer_t * line_buffer, file_name_entry_t * file_name, size_t line, size_t position, size_t size, const char * message, va_list args) {
     if (options.color_enable) fprintf(stderr, OUTPUT_COLOR_ERROR "ERROR:\n");
     else fprintf(stderr, "ERROR:\n");
 
     fprintf(stderr, "%s: ", file_name->absolute_path);
 
-    va_list args;
-    va_start(args, message);
     vfprintf(stderr, message, args);
-    va_end(args);
 
     fprintf(stderr, " on line %zu at position %zu\n", line_buffer->lines[line].metadata.source_line + 1, position + 1);
 

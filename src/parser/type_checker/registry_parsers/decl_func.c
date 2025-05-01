@@ -3,6 +3,48 @@
 
 #include <debug/line_error.h>
 
+void type_checker_registry_parse_code_block_recur(
+    line_buffer_t * line_buffer,
+    token_buffer_t * token_buffer,
+    type_checker_type_t * function_type,
+    syntax_tree_node_t * node
+) {
+    syntax_tree_node_list_node_t * subnode = node->head->next;
+
+    while (subnode != node->tail) {
+        if (subnode->token_type == RT_NONTERMINAL) {
+            if (subnode->nonterminal.nonterminal == NT_STATEMENT) {
+                syntax_tree_node_list_node_t * subsubnode = subnode->nonterminal.tree.head->next;
+
+                if (
+                    subsubnode->token_type == RT_TERMINAL &&
+                    subsubnode->terminal.terminal == token_number_keyword(SCANNER_KEYWORD_TYPE_RETURN)
+                ) {
+                    syntax_tree_node_list_node_t * return_value_node = subsubnode->next;
+
+                    if (return_value_node->token_type == RT_NONTERMINAL) {
+                        return_value_node->nonterminal.tree.head->next->desired_type = function_type->derived_type.function.return_type;
+                    }
+                    else {
+                        if (!type_checker_type_equal(function_type->derived_type.function.return_type, void_type)) {
+                            fatal_line_full_error(
+                                line_buffer,
+                                token_buffer->tokens[subsubnode->terminal.position].file_name,
+                                "No return value specified for non-void function",
+                                token_buffer->tokens[subsubnode->terminal.position].line_index
+                            );
+                        }
+                    }
+                }
+            }
+
+            type_checker_registry_parse_code_block_recur(line_buffer, token_buffer, function_type, &subnode->nonterminal.tree);
+        }
+
+        subnode = subnode->next;
+    }
+}
+
 type_checker_type_t * type_checker_registry_parse_decl_func(
     type_checker_registry_t * tr,
     type_checker_variable_registry_t * vr,
@@ -192,6 +234,8 @@ type_checker_type_t * type_checker_registry_parse_decl_func(
         }
 
         variable->defined = true;
+
+        type_checker_registry_parse_code_block_recur(line_buffer, token_buffer, &entry->type, &code_block_node->nonterminal.tree);
     }
     else variable->defined = false;
 

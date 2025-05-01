@@ -15,7 +15,7 @@ __NORETURN static inline void fatal_line_full_error(line_buffer_t * line_buffer,
     fatal_line_range_error(line_buffer, file_name, message, line, 0, strlen(line_buffer->lines[line].line));
 }
 
-__NORETURN void fatal_formatted_line_range_error_v(line_buffer_t * line_buffer, file_name_entry_t * file_name, size_t line, size_t position, size_t size, const char * message, ...);
+__NORETURN void fatal_formatted_line_range_error_v(line_buffer_t * line_buffer, file_name_entry_t * file_name, size_t line, size_t position, size_t size, const char * message, va_list args);
 
 __NORETURN static inline void fatal_formatted_line_range_error(line_buffer_t * line_buffer, file_name_entry_t * file_name, size_t line, size_t position, size_t size, const char * message, ...) {
     va_list args;
