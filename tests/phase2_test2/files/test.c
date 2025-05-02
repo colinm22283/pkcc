@@ -26,15 +26,7 @@ Will fail type checking later.
     struct mything {
         float a, b, c;
     };
-    struct other A;
+    struct rectangle A;
 
-    display(y, A.b.c[15].d.e, F[15].g);
-
-    for (;;) {
-        if (y.x == y) return;
-        y++;
-        --y.x;
-        break;
-    }
-    return A.x;
+    return A.lowerright;
 }

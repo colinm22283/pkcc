@@ -30,14 +30,20 @@ type_checker_variable_t * type_checker_variable_registry_add(type_checker_variab
 }
 
 type_checker_variable_t * type_checker_variable_registry_lookup(type_checker_variable_registry_t * vr, const char * name, type_checker_scope_t * scope) {
+    type_checker_variable_t * variable = NULL;
+
     for (size_t i = 0; i < vr->variable_count; i++) {
         if (
             type_checker_scope_is_parent(vr->variables[i]->scope, scope) &&
             strcmp(name, vr->variables[i]->name) == 0
-        ) return vr->variables[i];
+        ) {
+            if (variable == NULL || vr->variables[i]->scope->depth > variable->scope->depth) {
+                variable = vr->variables[i];
+            }
+        }
     }
 
-    return NULL;
+    return variable;
 }
 
 type_checker_variable_t * type_checker_variable_registry_lookup_clashes(type_checker_variable_registry_t * vr, const char * name, type_checker_scope_t * scope) {
@@ -51,7 +57,7 @@ type_checker_variable_t * type_checker_variable_registry_lookup_clashes(type_che
             if (
                 type_checker_scope_is_parent(vr->variables[i]->scope, scope) &&
                 strcmp(name, vr->variables[i]->name) == 0
-                ) return vr->variables[i];
+            ) return vr->variables[i];
         }
     }
 

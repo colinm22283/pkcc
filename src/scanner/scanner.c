@@ -284,13 +284,12 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
     }
 }
 
-void scanner_print_tokens(scanner_t * scanner) {
+void scanner_print_tokens(scanner_t * scanner, line_buffer_t * line_buffer) {
     char str_buffer[TOKEN_STRINGIFY_BUFFER_REQUIREMENT];
 
-    size_t line = 0;
+    size_t line = 1;
 
-    log_printf("%-6s Tokens\n", "Line");
-    log_printf("%-6zu ", 1);
+    log_printf("%-6s Tokens", "Line");
 
     for (size_t i = 0; i < scanner->tb.token_count; i++) {
         token_t * token = &scanner->tb.tokens[i];
@@ -298,7 +297,7 @@ void scanner_print_tokens(scanner_t * scanner) {
         if (line != token->line_index) {
             line = token->line_index;
 
-            log_printf("\n%-6zu ", token->line_index + 1);
+            log_printf("\n%-6zu ", token->line_index, line_buffer->lines[token->line_index].metadata.source_line);
             fflush(stdout);
         }
 

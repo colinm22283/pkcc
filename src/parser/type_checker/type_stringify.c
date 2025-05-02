@@ -106,7 +106,7 @@ char * type_checker_type_stringify(type_checker_type_t * type) {
                 PUSH_STR(")");
             } break;
 
-//            default: fatal_error("Unimplemented in stringify %zu\n", type->derived_type.type);
+            default: break;
         }
     }
 

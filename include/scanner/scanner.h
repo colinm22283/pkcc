@@ -14,4 +14,4 @@ void scanner_free(scanner_t * scanner);
 
 void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer);
 
-void scanner_print_tokens(scanner_t * scanner);
+void scanner_print_tokens(scanner_t * scanner, line_buffer_t * line_buffer);

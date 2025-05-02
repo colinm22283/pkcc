@@ -3,7 +3,6 @@
 #include <defs.h>
 #include <main.h>
 #include <alloc.h>
-#include <free_list.h>
 #include <file/file_loader.h>
 #include <file/file_writer.h>
 
@@ -76,7 +75,7 @@ int main(int argc, const char ** argv) {
 
     if (options.log_enable) {
         log_printf("Printing scanner tokens:\n");
-        scanner_print_tokens(&scanner);
+        scanner_print_tokens(&scanner, &preprocessor_output);
     }
 
     if (options.phase1) {

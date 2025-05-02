@@ -138,7 +138,7 @@ size_t scanner_parse_number(
         token_data_constant_t * constant = (token_data_constant_t *) token->data;
 
         token->file_name = line->metadata.file_name;
-        token->line_index = source_line_number;
+        token->line_index = line_number;
         token->position = position;
 
         constant->i = accumulator;

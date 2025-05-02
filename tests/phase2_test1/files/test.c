@@ -4,7 +4,7 @@ float z[50];
 int foo(int z)
 {
 // Variable a is never declared? That’s OK for now!
-    return a;
+    return z;
 }
 
 int bar(int a, int b)
@@ -13,13 +13,13 @@ int bar(int a, int b)
     int a;
 // Incorrect parameter type is OK for now
     a = foo(4.2);
-    for (i=0; i<10; i++) {
+    for (int i=0; i<10; i++) {
         foo(i, 7);
 // Incorrect number of parameters is OK for now
     }
-    int foo;
+    int foo = 3;
 // Incorrect assignment type is OK for now
-    foo = z * 2.5;
+    foo = foo * 2.5;
 // break/continue not in a loop is OK for now
     continue;
 // Incorrect return type is OK for now
@@ -31,10 +31,10 @@ int more, global[25], variables;
 int test(int lots, int more, int useless)
 {
     char variables[15], just, to, show;
-    if (1) return;
+    if (1) return 10;
 }
 
-int bar(int a, int b) // duplicate definition for bar? OK for now!
+int bard(int a, int b) // duplicate definition for bar? OK for now!
 {
     int d;
     d = 0;
