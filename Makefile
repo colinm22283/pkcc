@@ -32,3 +32,16 @@ $(BUILD_DIR)/pkcc: $(OBJS)
 clean:
 	rm -rf $(BUILD_DIR)
 
+.PHONY: run
+run:
+	$(MAKE) test-generation_test
+	echo "------------ OUTPUT ------------"
+	~/temp/Krakatau/target/release/krak2 asm --out build/tests/generation_test/main.class build/tests/generation_test/main.j
+	cd build/tests/generation_test && java main
+
+.PHONY: run-gdb
+run-gdb:
+	$(MAKE) gdb-generation_test
+	echo "------------ OUTPUT ------------"
+	~/temp/Krakatau/target/release/krak2 asm --out build/tests/generation_test/main.class build/tests/generation_test/main.j
+	cd build/tests/generation_test && java main

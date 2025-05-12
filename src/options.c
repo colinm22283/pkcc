@@ -16,6 +16,7 @@ options_t options = {
     .phase1 = false,
     .phase2 = false,
     .phase3 = false,
+    .phase4 = false,
 
     .preprocess_only = false,
     .dump_tree = false,
@@ -29,6 +30,8 @@ options_t options = {
     .max_real_length = 48,
     .max_identifier_length = 48,
     .max_string_length = 1024,
+
+    .backend_implementation = "java",
 };
 
 void options_parse_cli(int argc, const char ** argv) {
@@ -92,6 +95,9 @@ void options_parse_cli(int argc, const char ** argv) {
             }
             else if (strcmp(argv[i] + 1, "3") == 0) {
                 options.phase3 = true;
+            }
+            else if (strcmp(argv[i] + 1, "4") == 0) {
+                options.phase4 = true;
             }
             else if (argv[i][1] == 'f') {
                 const char * data = &argv[i][2];

@@ -31,6 +31,7 @@ OBJS+=$(OBJ_DIR)/parser/syntax_tree.o
 OBJS+=$(OBJ_DIR)/parser/rule_registry.o
 OBJS+=$(OBJ_DIR)/parser/rules.o
 OBJS+=$(OBJ_DIR)/parser/phase2.o
+OBJS+=$(OBJ_DIR)/parser/syntax_tree_traverser.o
 
 OBJS+=$(OBJ_DIR)/parser/type_checker/type_stringify.o
 OBJS+=$(OBJ_DIR)/parser/type_checker/type_free.o
@@ -50,3 +51,12 @@ OBJS+=$(OBJ_DIR)/parser/type_checker/registry_parsers/expression.o
 OBJS+=$(OBJ_DIR)/parser/type_checker/registry_parsers/terminal.o
 OBJS+=$(OBJ_DIR)/parser/type_checker/registry_parsers/decl_var.o
 OBJS+=$(OBJ_DIR)/parser/type_checker/registry_parsers/decl_func.o
+
+OBJS+=$(OBJ_DIR)/java/code_generator.o
+OBJS+=$(OBJ_DIR)/java/header_footer.o
+OBJS+=$(OBJ_DIR)/java/java_type_stringify.o
+OBJS+=$(OBJ_DIR)/java/java_prefix.o
+OBJS+=$(OBJ_DIR)/java/variable_registry.o
+OBJS+=$(OBJ_DIR)/java/generators/globals.o
+OBJS+=$(OBJ_DIR)/java/generators/functions.o
+OBJS+=$(OBJ_DIR)/java/generators/expression.o
