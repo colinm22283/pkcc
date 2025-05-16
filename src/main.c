@@ -19,9 +19,9 @@
 #include <parser/rule_registry.h>
 #include <parser/phase2.h>
 #include <parser/type_checker/phase3.h>
-#include <parser/type_checker/type_registry.h>
 
 #include <java/code_generator.h>
+#include <java/add_lib_definitions.h>
 
 free_list_t free_list;
 
@@ -94,6 +94,10 @@ int main(int argc, const char ** argv) {
     static parser_t parser;
     parser_init(&parser, &scanner, &preprocessor_output);
     __MAYBE_UNUSED free_list_node_t * parser_node = free_list_push(&free_list, &parser, (void (*)(void *)) parser_free);
+
+    if (options.phase4) {
+        java_add_lib_definitions(&parser.type_checker.type_registry, &parser.type_checker.variable_registry);
+    }
 
     parser_run(&parser);
 

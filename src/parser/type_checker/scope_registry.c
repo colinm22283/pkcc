@@ -26,6 +26,8 @@ void type_checker_scope_registry_init(type_checker_scope_registry_t * registry, 
     registry->scope_capacity = 4;
 
     registry->scopes = pkcc_alloc(registry->scope_capacity * sizeof(type_checker_scope_t *));
+
+    root_scope = add_scope(registry);
 }
 
 void type_checker_scope_registry_free(type_checker_scope_registry_t * registry) {
@@ -69,8 +71,6 @@ void type_checker_scope_registry_run_recur(
 }
 
 void type_checker_scope_registry_run(type_checker_scope_registry_t * registry) {
-    root_scope = add_scope(registry);
-
     root_scope->parent = root_scope;
     root_scope->depth = 0;
 

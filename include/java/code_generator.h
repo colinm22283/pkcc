@@ -6,7 +6,7 @@
 
 #include <java/variable_registry.h>
 
-typedef struct {
+typedef struct java_code_generator_s {
     syntax_tree_t * syntax_tree;
     FILE * out_file;
 

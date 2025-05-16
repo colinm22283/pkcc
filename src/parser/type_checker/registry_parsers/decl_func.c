@@ -107,6 +107,7 @@ type_checker_type_t * type_checker_registry_parse_decl_func(
             syntax_tree_node_list_node_t * array_node = NULL;
             if (
                 inner_temp_node != function_node->nonterminal.tree.tail &&
+                inner_temp_node->token_type == RT_NONTERMINAL &&
                 inner_temp_node->nonterminal.nonterminal == NT_DECL_VAR_DECL_ARRAY
             ) {
                 log_printf("Argument is array\n");

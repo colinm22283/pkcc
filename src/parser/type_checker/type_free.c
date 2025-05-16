@@ -10,7 +10,15 @@ void type_checker_type_free(type_checker_type_t * type) {
             case DTT_STRUCT: {
                 if (type->derived_type.structure.name != NULL) pkcc_free(type->derived_type.structure.name);
 
+                for (size_t i = 0; i < type->derived_type.structure.subtype_count; i++) {
+                    pkcc_free(type->derived_type.structure.subtype_names[i]);
+                }
+                pkcc_free(type->derived_type.structure.subtype_names);
                 pkcc_free(type->derived_type.structure.subtypes);
+            } break;
+
+            case DTT_QUALIFIED: {
+                pkcc_free(type->derived_type.qualified.qualifiers);
             } break;
 
             case DTT_FUNCTION: {

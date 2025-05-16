@@ -59,8 +59,6 @@ char * java_type_stringify(type_checker_type_t * type) {
                     char * sub_str = java_type_stringify(type->derived_type.function.args[i]);
                     ADD_STRING(sub_str);
                     pkcc_free(sub_str);
-
-                    ADD_STRING(";");
                 }
 
                 ADD_STRING(")");

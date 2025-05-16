@@ -37,11 +37,13 @@ run:
 	$(MAKE) test-generation_test
 	echo "------------ OUTPUT ------------"
 	~/temp/Krakatau/target/release/krak2 asm --out build/tests/generation_test/main.class build/tests/generation_test/main.j
-	cd build/tests/generation_test && java main
+	cd build/tests/generation_test && javac -d . lib440.java
+	cd build/tests/generation_test && java main lib440
 
 .PHONY: run-gdb
 run-gdb:
 	$(MAKE) gdb-generation_test
 	echo "------------ OUTPUT ------------"
 	~/temp/Krakatau/target/release/krak2 asm --out build/tests/generation_test/main.class build/tests/generation_test/main.j
-	cd build/tests/generation_test && java main
+	cd build/tests/generation_test && javac -d . lib440.java
+	cd build/tests/generation_test && java main lib440

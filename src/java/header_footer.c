@@ -3,7 +3,15 @@
 const char * java_out_file_header = ".class public %s\n"
                                     ".super java/lang/Object\n\n";
 
-const char * java_out_file_footer = "\t.method public static main : ([Ljava/lang/String;)V\n"
+const char * java_out_file_footer = "\t.method <init> : ()V\n"
+                                    "\t.code stack 1 locals 1\n"
+                                    "\t\taload_0\n"
+                                    "\t\tinvokespecial Method java/lang/Object <init> ()V\n"
+                                    "\t\treturn\n"
+                                    "\t.end code\n"
+                                    "\t.end method\n"
+                                    "\n"
+                                    "\t.method public static main : ([Ljava/lang/String;)V\n"
                                     "\t.code stack 1 locals 1\n"
                                     "\t\tinvokestatic Method %s main ()I\n"
                                     "\t\tinvokestatic Method java/lang/System exit (I)V\n"

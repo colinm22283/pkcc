@@ -4,6 +4,7 @@
 #include <parser/rules.h>
 
 #include <java/java_type_stringify.h>
+#include <java/java_primitive_stringify.h>
 #include <java/generators/globals.h>
 #include <java/generators/expression.h>
 
@@ -11,6 +12,7 @@ typedef struct {
     const char * name;
     type_checker_type_t * type;
     type_checker_scope_t * scope;
+    bool is_initialized;
     syntax_tree_traverser_t expression_stt;
 } java_generator_global_t;
 
@@ -32,7 +34,6 @@ void java_generator_global(java_code_generator_t * jcg) {
             syntax_tree_traverser_enter(&decl_stt, &decl_var_stt);
 
             syntax_tree_traverser_seek_nonterminal(&decl_var_stt, NT_TYPE);
-            type_checker_type_t * decl_type = decl_var_stt.current_node->type;
             type_checker_scope_t * decl_scope = decl_var_stt.current_node->scope;
 
             if (syntax_tree_traverser_seek_nonterminal(&decl_var_stt, NT_DECL_VAR_NAME_LIST)) {
@@ -51,14 +52,17 @@ void java_generator_global(java_code_generator_t * jcg) {
                     log_printf("Got global identifier with name \"%s\"\n", identifier_node->identifier_data->name);
 
                     globals[global_count].name = identifier_node->identifier_data->name;
-                    globals[global_count].type = decl_type;
+                    globals[global_count].type = decl_list_stt.current_node->type;
                     globals[global_count].scope = decl_scope;
 
                     if (syntax_tree_traverser_seek_nonterminal(&decl_var_decl_stt, NT_DECL_VAR_DECL_EQUAL)) {
+                        globals[global_count].is_initialized = true;
+
                         syntax_tree_traverser_enter(&decl_var_decl_stt, &globals[global_count].expression_stt);
 
                         syntax_tree_traverser_seek_nonterminal(&globals[global_count].expression_stt, NT_EXPRESSION_LEVEL_14);
                     }
+                    else globals[global_count].is_initialized = false;
 
                     global_count++;
                     if (global_count == global_capacity) {
@@ -97,19 +101,40 @@ void java_generator_global(java_code_generator_t * jcg) {
         "\t.code stack 1024 locals 1024\n"
     );
     for (size_t i = 0; i < global_count; i++) {
-        java_generator_expression(jcg, globals[i].expression_stt);
+        if (!globals[i].type->is_base && globals[i].type->derived_type.type == DTT_ARRAY) {
+            const char * ele_type_str = java_primitive_stringify(globals[i].type->derived_type.array.subtype);
+            fprintf(
+                jcg->out_file,
+                "\t\tldc_w 1024\n"
+                "\t\tnewarray %s\n",
+                ele_type_str
+            );
 
-        char * type_str = java_type_stringify(globals[i].type);
+            char * type_str = java_type_stringify(globals[i].type);
+            fprintf(
+                jcg->out_file,
+                "\t\tputstatic %s/%s %s\n",
+                jcg->classname,
+                globals[i].name,
+                type_str
+            );
+            pkcc_free(type_str);
+        }
+        else if (globals[i].is_initialized) {
+            java_generator_expression(jcg, globals[i].expression_stt);
 
-        fprintf(
-            jcg->out_file,
-            "\t\tputstatic %s/%s %s\n",
-            jcg->classname,
-            globals[i].name,
-            type_str
-        );
+            char * type_str = java_type_stringify(globals[i].type);
 
-        pkcc_free(type_str);
+            fprintf(
+                jcg->out_file,
+                "\t\tputstatic %s/%s %s\n",
+                jcg->classname,
+                globals[i].name,
+                type_str
+            );
+
+            pkcc_free(type_str);
+        }
     }
     fprintf(
         jcg->out_file,

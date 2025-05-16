@@ -1,6 +1,6 @@
 include $(TEST_INCLUDE)
 
-ARGUMENTS=-d -4 -fdump-tree -I $(TEST_DIR) $(TEST_DIR)/test.c -o $(TEST_DIR)/main.j
+ARGUMENTS=-4 -fdump-tree -I $(TEST_DIR) $(TEST_DIR)/test.c -o $(TEST_DIR)/main.j
 COMMAND=$(PKCC) $(ARGUMENTS)
 
 FILES=test.c lib440.java
