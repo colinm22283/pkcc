@@ -35,7 +35,13 @@ int main(int argc, const char ** argv) {
     rule_registry_init();
 
     if (options.input_path == NULL) fatal_error("No input path specified\n" USAGE_STRING, argv[0]);
-    if (options.output_path == NULL) fatal_error("No output path specified\n" USAGE_STRING, argv[0]);
+//    if (options.output_path == NULL) fatal_error("No output path specified\n" USAGE_STRING, argv[0]);
+
+    if (options.output_path == NULL) {
+        options.output_path = pkcc_alloc(strlen(options.input_path) + 1);
+        strcpy((char *) options.output_path, options.input_path);
+        options.output_path[strlen(options.input_path) - 1] = 'j';
+    }
 
     static file_loader_t file_loader;
     file_loader_init(&file_loader, options.input_path);
@@ -95,7 +101,7 @@ int main(int argc, const char ** argv) {
     parser_init(&parser, &scanner, &preprocessor_output);
     __MAYBE_UNUSED free_list_node_t * parser_node = free_list_push(&free_list, &parser, (void (*)(void *)) parser_free);
 
-    if (options.phase4) {
+    if (options.phase4 || options.phase5) {
         java_add_lib_definitions(&parser.type_checker.type_registry, &parser.type_checker.variable_registry);
     }
 
@@ -133,7 +139,7 @@ int main(int argc, const char ** argv) {
         exit_and_free(0);
     }
 
-    if (options.phase4) {
+    if (options.phase4 || options.phase5) {
         FILE * out_file = fopen(options.output_path, "w");
 
         java_code_generator_t jcg;

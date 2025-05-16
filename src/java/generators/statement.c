@@ -162,14 +162,17 @@ java_variable_registry_node_t * java_generator_statement(
                     }
                 }
 
-                if (syntax_tree_traverser_seek_nonterminal(&statement_stt, NT_OPTIONAL_EXPRESSION)) {
+                syntax_tree_traverser_seek_terminal(&statement_stt, token_number_punctuation(SCANNER_PUNCTUATION_TYPE_SEMICOLON));
+                syntax_tree_traverser_next(&statement_stt);
+                if (
+                    statement_stt.current_node->token_type == RT_NONTERMINAL &&
+                    statement_stt.current_node->nonterminal.nonterminal == NT_OPTIONAL_EXPRESSION
+                ) {
                     syntax_tree_traverser_enter(&statement_stt, &test_exp_stt);
 
                     syntax_tree_traverser_seek_nonterminal(&test_exp_stt, NT_EXPRESSION);
                     has_test_exp = true;
                 }
-
-                syntax_tree_traverser_next(&statement_stt);
 
                 fprintf(
                     jcg->out_file,
@@ -177,7 +180,12 @@ java_variable_registry_node_t * java_generator_statement(
                     cont_label->name
                 );
 
-                if (syntax_tree_traverser_seek_nonterminal(&statement_stt, NT_OPTIONAL_EXPRESSION)) {
+                syntax_tree_traverser_seek_terminal(&statement_stt, token_number_punctuation(SCANNER_PUNCTUATION_TYPE_SEMICOLON));
+                syntax_tree_traverser_next(&statement_stt);
+                if (
+                    statement_stt.current_node->token_type == RT_NONTERMINAL &&
+                    statement_stt.current_node->nonterminal.nonterminal == NT_OPTIONAL_EXPRESSION
+                ) {
                     syntax_tree_traverser_enter(&statement_stt, &update_exp_stt);
 
                     syntax_tree_traverser_seek_nonterminal(&update_exp_stt, NT_EXPRESSION);
@@ -196,12 +204,6 @@ java_variable_registry_node_t * java_generator_statement(
                     java_generator_code_line(jcg, statement_stt, function_type, end_label, cont_label);
                 }
 
-                fprintf(
-                    jcg->out_file,
-                    "\t%s:\n",
-                    cmp_label->name
-                );
-
                 if (has_update_exp) {
                     java_generator_expression(jcg, update_exp_stt);
                     fprintf(
@@ -209,6 +211,12 @@ java_variable_registry_node_t * java_generator_statement(
                         "\t\tpop\n"
                     );
                 }
+
+                fprintf(
+                    jcg->out_file,
+                    "\t%s:\n",
+                    cmp_label->name
+                );
 
                 if (has_test_exp) {
                     java_generator_expression(jcg, test_exp_stt);
