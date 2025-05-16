@@ -5,7 +5,7 @@ char java_prefix(type_checker_type_t * type) {
         switch (type->base_type.type) {
             case BTT_VOID: return 'X';
 
-            case BTT_BOOL: return 'b';
+            case BTT_BOOL: return 'i';
 
             case BTT_CHAR: return 'c';
 

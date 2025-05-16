@@ -5,6 +5,7 @@
 #include <parser/syntax_tree.h>
 
 #include <java/variable_registry.h>
+#include <java/label_manager.h>
 
 typedef struct java_code_generator_s {
     syntax_tree_t * syntax_tree;
@@ -13,6 +14,7 @@ typedef struct java_code_generator_s {
     char * classname;
 
     java_variable_registry_t jvr;
+    java_label_manager_t jlm;
 } java_code_generator_t;
 
 void java_code_generator_init(java_code_generator_t * jcg, FILE * out_file, syntax_tree_t * syntax_tree);

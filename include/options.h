@@ -12,6 +12,7 @@ typedef struct {
     bool phase2;
     bool phase3;
     bool phase4;
+    bool phase5;
 
     bool preprocess_only;
     bool dump_tree;

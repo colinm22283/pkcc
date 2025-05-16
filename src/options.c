@@ -17,6 +17,7 @@ options_t options = {
     .phase2 = false,
     .phase3 = false,
     .phase4 = false,
+    .phase5 = false,
 
     .preprocess_only = false,
     .dump_tree = false,
@@ -98,6 +99,9 @@ void options_parse_cli(int argc, const char ** argv) {
             }
             else if (strcmp(argv[i] + 1, "4") == 0) {
                 options.phase4 = true;
+            }
+            else if (strcmp(argv[i] + 1, "5") == 0) {
+                options.phase5 = true;
             }
             else if (argv[i][1] == 'f') {
                 const char * data = &argv[i][2];

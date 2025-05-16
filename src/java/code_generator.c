@@ -25,6 +25,8 @@ void java_code_generator_init(java_code_generator_t * jcg, FILE * out_file, synt
 
     java_variable_registry_init(&jcg->jvr);
 
+    java_label_manager_init(&jcg->jlm);
+
     if (java_getchar_type != NULL) java_variable_registry_push_function(&jcg->jvr, "getchar", java_getchar_type);
     if (java_putchar_type != NULL) java_variable_registry_push_function(&jcg->jvr, "putchar", java_putchar_type);
     if (java_getint_type != NULL) java_variable_registry_push_function(&jcg->jvr, "getint", java_getint_type);
@@ -35,6 +37,8 @@ void java_code_generator_init(java_code_generator_t * jcg, FILE * out_file, synt
 }
 
 void java_code_generator_free(java_code_generator_t * jcg) {
+    java_label_manager_free(&jcg->jlm);
+
     java_variable_registry_free(&jcg->jvr);
 
     pkcc_free(jcg->classname);

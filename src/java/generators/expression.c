@@ -238,6 +238,310 @@ java_variable_registry_node_t * java_generator_expression(java_code_generator_t 
             }
         } break;
 
+        case NT_EXPRESSION_LEVEL_13: {
+            log_printf("Expression: Level 13\n");
+
+            java_variable_registry_node_t * node = java_generator_expression(jcg, sub_stt);
+
+            if (syntax_tree_traverser_seek_nonterminal(&sub_stt, NT_EXPRESSION_LEVEL_13_PRIME)) {
+                java_generator_expression(jcg, sub_stt);
+            }
+
+            result = node;
+        } break;
+
+        case NT_EXPRESSION_LEVEL_13_PRIME: {
+            java_label_t * false_label = java_label_manager_add(&jcg->jlm);
+            java_label_t * end_label = java_label_manager_add(&jcg->jlm);
+
+            fprintf(
+                jcg->out_file,
+                "\t\tifeq %s\n",
+                false_label->name
+            );
+
+            syntax_tree_traverser_seek_nonterminal(&sub_stt, NT_EXPRESSION_LEVEL_13);
+            java_generator_expression(jcg, sub_stt);
+
+            fprintf(
+                jcg->out_file,
+                "\t\tgoto %s\n"
+                "\t\t%s:\n",
+                end_label->name,
+                false_label->name
+            );
+
+            syntax_tree_traverser_next(&sub_stt);
+            syntax_tree_traverser_seek_nonterminal(&sub_stt, NT_EXPRESSION_LEVEL_13);
+            java_generator_expression(jcg, sub_stt);
+
+            fprintf(
+                jcg->out_file,
+                "\t\t%s:\n",
+                end_label->name
+            );
+        } break;
+
+        case NT_EXPRESSION_LEVEL_12: {
+            log_printf("Expression: Level 12\n");
+
+            java_variable_registry_node_t * node = java_generator_expression(jcg, sub_stt);
+
+            if (syntax_tree_traverser_seek_nonterminal(&sub_stt, NT_EXPRESSION_LEVEL_12_PRIME)) {
+                java_generator_expression(jcg, sub_stt);
+            }
+
+            result = node;
+        } break;
+
+        case NT_EXPRESSION_LEVEL_12_PRIME: { // OR
+            java_label_t * end_label = java_label_manager_add(&jcg->jlm);
+            java_label_t * skip_label = java_label_manager_add(&jcg->jlm);
+
+            fprintf(
+                jcg->out_file,
+                "\t\tifne %s\n",
+                end_label->name
+            );
+
+            syntax_tree_traverser_seek_nonterminal(&sub_stt, NT_EXPRESSION_LEVEL_11);
+            java_generator_expression(jcg, sub_stt);
+
+            if (syntax_tree_traverser_seek_nonterminal(&sub_stt, NT_EXPRESSION_LEVEL_12_PRIME)) java_generator_expression(jcg, sub_stt);
+
+            fprintf(
+                jcg->out_file,
+                "\t\tgoto %s\n"
+                "\t%s:\n"
+                "\t\ticonst_1\n"
+                "\t%s:\n",
+                skip_label->name,
+                end_label->name,
+                skip_label->name
+            );
+        } break;
+
+        case NT_EXPRESSION_LEVEL_11: {
+            log_printf("Expression: Level 11\n");
+
+            java_variable_registry_node_t * node = java_generator_expression(jcg, sub_stt);
+
+            if (syntax_tree_traverser_seek_nonterminal(&sub_stt, NT_EXPRESSION_LEVEL_11_PRIME)) {
+                java_generator_expression(jcg, sub_stt);
+            }
+
+            result = node;
+        } break;
+
+        case NT_EXPRESSION_LEVEL_11_PRIME: { // AND
+            java_label_t * end_label = java_label_manager_add(&jcg->jlm);
+            java_label_t * skip_label = java_label_manager_add(&jcg->jlm);
+
+            fprintf(
+                jcg->out_file,
+                "\t\tifeq %s\n",
+                end_label->name
+            );
+
+            syntax_tree_traverser_seek_nonterminal(&sub_stt, NT_EXPRESSION_LEVEL_10);
+            java_generator_expression(jcg, sub_stt);
+
+            if (syntax_tree_traverser_seek_nonterminal(&sub_stt, NT_EXPRESSION_LEVEL_11_PRIME)) java_generator_expression(jcg, sub_stt);
+
+            fprintf(
+                jcg->out_file,
+                "\t\tgoto %s\n"
+                "\t%s:\n"
+                "\t\ticonst_0\n"
+                "\t%s:\n",
+                skip_label->name,
+                end_label->name,
+                skip_label->name
+            );
+        } break;
+
+        case NT_EXPRESSION_LEVEL_7: {
+            log_printf("Expression: Level 7\n");
+
+            java_variable_registry_node_t * node = java_generator_expression(jcg, sub_stt);
+
+            if (syntax_tree_traverser_seek_nonterminal(&sub_stt, NT_EXPRESSION_LEVEL_7_PRIME)) {
+                java_generator_expression(jcg, sub_stt);
+            }
+
+            result = node;
+        } break;
+
+        case NT_EXPRESSION_LEVEL_7_PRIME: {
+            token_number_t operator = sub_stt.current_node->terminal.terminal;
+
+            syntax_tree_traverser_seek_nonterminal(&sub_stt, NT_EXPRESSION_LEVEL_6);
+            java_generator_expression(jcg, sub_stt);
+
+            type_checker_type_t * desired_type = stt.current_node->desired_type;
+            if (desired_type == NULL) desired_type = stt.current_node->type;
+
+            switch (operator) {
+                case token_number_punctuation(SCANNER_PUNCTUATION_TYPE_EQUAL_TO): {
+                    java_label_t * mid_label = java_label_manager_add(&jcg->jlm);
+                    java_label_t * end_label = java_label_manager_add(&jcg->jlm);
+
+                    fprintf(
+                        jcg->out_file,
+                        "\t\t%csub\n"
+                        "\t\tifeq %s\n"
+                        "\t\ticonst_0\n"
+                        "\t\tgoto %s\n"
+                        "\t%s:\n"
+                        "\t\ticonst_1\n"
+                        "\t%s:\n",
+                        java_prefix(desired_type),
+                        mid_label->name,
+                        end_label->name,
+                        mid_label->name,
+                        end_label->name
+                    );
+                } break;
+
+                case token_number_punctuation(SCANNER_PUNCTUATION_TYPE_NOT_EQUAL_TO): {
+                    java_label_t * mid_label = java_label_manager_add(&jcg->jlm);
+                    java_label_t * end_label = java_label_manager_add(&jcg->jlm);
+
+                    fprintf(
+                        jcg->out_file,
+                        "\t\t%csub\n"
+                        "\t\tifne %s\n"
+                        "\t\ticonst_0\n"
+                        "\t\tgoto %s\n"
+                        "\t%s:\n"
+                        "\t\ticonst_1\n"
+                        "\t%s:\n",
+                        java_prefix(desired_type),
+                        mid_label->name,
+                        end_label->name,
+                        mid_label->name,
+                        end_label->name
+                    );
+                } break;
+
+                default: break;
+            }
+
+            if (syntax_tree_traverser_seek_nonterminal(&sub_stt, NT_EXPRESSION_LEVEL_7_PRIME)) java_generator_expression(jcg, sub_stt);
+        } break;
+
+        case NT_EXPRESSION_LEVEL_6: {
+            log_printf("Expression: Level 6\n");
+
+            java_variable_registry_node_t * node = java_generator_expression(jcg, sub_stt);
+
+            if (syntax_tree_traverser_seek_nonterminal(&sub_stt, NT_EXPRESSION_LEVEL_6_PRIME)) {
+                java_generator_expression(jcg, sub_stt);
+            }
+
+            result = node;
+        } break;
+
+        case NT_EXPRESSION_LEVEL_6_PRIME: {
+            token_number_t operator = sub_stt.current_node->terminal.terminal;
+
+            syntax_tree_traverser_seek_nonterminal(&sub_stt, NT_EXPRESSION_LEVEL_5);
+            java_generator_expression(jcg, sub_stt);
+
+            type_checker_type_t * desired_type = stt.current_node->desired_type;
+            if (desired_type == NULL) desired_type = stt.current_node->type;
+
+            switch (operator) {
+                case token_number_punctuation(SCANNER_PUNCTUATION_TYPE_LESS_THAN): {
+                    java_label_t * mid_label = java_label_manager_add(&jcg->jlm);
+                    java_label_t * end_label = java_label_manager_add(&jcg->jlm);
+
+                    fprintf(
+                        jcg->out_file,
+                        "\t\t%csub\n"
+                        "\t\tiflt %s\n"
+                        "\t\ticonst_0\n"
+                        "\t\tgoto %s\n"
+                        "\t%s:\n"
+                        "\t\ticonst_1\n"
+                        "\t%s:\n",
+                        java_prefix(desired_type),
+                        mid_label->name,
+                        end_label->name,
+                        mid_label->name,
+                        end_label->name
+                    );
+                } break;
+
+                case token_number_punctuation(SCANNER_PUNCTUATION_TYPE_GREATER_THAN): {
+                    java_label_t * mid_label = java_label_manager_add(&jcg->jlm);
+                    java_label_t * end_label = java_label_manager_add(&jcg->jlm);
+
+                    fprintf(
+                        jcg->out_file,
+                        "\t\t%csub\n"
+                        "\t\tifgt %s\n"
+                        "\t\ticonst_0\n"
+                        "\t\tgoto %s\n"
+                        "\t%s:\n"
+                        "\t\ticonst_1\n"
+                        "\t%s:\n",
+                        java_prefix(desired_type),
+                        mid_label->name,
+                        end_label->name,
+                        mid_label->name,
+                        end_label->name
+                    );
+                } break;
+
+                case token_number_punctuation(SCANNER_PUNCTUATION_TYPE_LESS_THAN_OR_EQUAL_TO): {
+                    java_label_t * mid_label = java_label_manager_add(&jcg->jlm);
+                    java_label_t * end_label = java_label_manager_add(&jcg->jlm);
+
+                    fprintf(
+                        jcg->out_file,
+                        "\t\t%csub\n"
+                        "\t\tifle %s\n"
+                        "\t\ticonst_0\n"
+                        "\t\tgoto %s\n"
+                        "\t%s:\n"
+                        "\t\ticonst_1\n"
+                        "\t%s:\n",
+                        java_prefix(desired_type),
+                        mid_label->name,
+                        end_label->name,
+                        mid_label->name,
+                        end_label->name
+                    );
+                } break;
+
+                case token_number_punctuation(SCANNER_PUNCTUATION_TYPE_GREATER_THAN_OR_EQUAL_TO): {
+                    java_label_t * mid_label = java_label_manager_add(&jcg->jlm);
+                    java_label_t * end_label = java_label_manager_add(&jcg->jlm);
+
+                    fprintf(
+                        jcg->out_file,
+                        "\t\t%csub\n"
+                        "\t\tifge %s\n"
+                        "\t\ticonst_0\n"
+                        "\t\tgoto %s\n"
+                        "\t%s:\n"
+                        "\t\ticonst_1\n"
+                        "\t%s:\n",
+                        java_prefix(desired_type),
+                        mid_label->name,
+                        end_label->name,
+                        mid_label->name,
+                        end_label->name
+                    );
+                } break;
+
+                default: break;
+            }
+
+            if (syntax_tree_traverser_seek_nonterminal(&sub_stt, NT_EXPRESSION_LEVEL_6_PRIME)) java_generator_expression(jcg, sub_stt);
+        } break;
+
         case NT_EXPRESSION_LEVEL_4: {
             log_printf("Expression: Level 4\n");
 
