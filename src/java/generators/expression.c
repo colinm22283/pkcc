@@ -643,6 +643,28 @@ java_variable_registry_node_t * java_generator_expression(java_code_generator_t 
                         fprintf(jcg->out_file, "\t\t%cneg\n", java_prefix(sub_stt.current_node->type));
                     } break;
 
+                    case token_number_punctuation(SCANNER_PUNCTUATION_TYPE_LOGICAL_NEGATION): {
+                        syntax_tree_traverser_seek_nonterminal(&sub_stt, NT_EXPRESSION_LEVEL_2);
+                        java_generator_expression(jcg, sub_stt);
+
+                        java_label_t * mid_label = java_label_manager_add(&jcg->jlm);
+                        java_label_t * end_label = java_label_manager_add(&jcg->jlm);
+
+                        fprintf(
+                            jcg->out_file,
+                            "\t\tifeq %s\n"
+                            "\t\ticonst_0\n"
+                            "\t\ngoto %s\n"
+                            "\t%s:\n"
+                            "\t\ticonst_1\n"
+                            "\t%s:\n",
+                            mid_label->name,
+                            end_label->name,
+                            mid_label->name,
+                            end_label->name
+                        );
+                    } break;
+
                     case token_number_punctuation(SCANNER_PUNCTUATION_TYPE_INCREMENT): {
                         syntax_tree_traverser_seek_nonterminal(&sub_stt, NT_EXPRESSION_LEVEL_2);
                         java_variable_registry_node_t * lval = java_generator_expression(jcg, sub_stt);
