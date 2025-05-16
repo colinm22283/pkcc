@@ -20,6 +20,9 @@
 #include <parser/phase2.h>
 #include <parser/type_checker/phase3.h>
 
+#include <java/code_generator.h>
+#include <java/add_lib_definitions.h>
+
 free_list_t free_list;
 
 int main(int argc, const char ** argv) {
@@ -32,7 +35,13 @@ int main(int argc, const char ** argv) {
     rule_registry_init();
 
     if (options.input_path == NULL) fatal_error("No input path specified\n" USAGE_STRING, argv[0]);
-    if (options.output_path == NULL) fatal_error("No output path specified\n" USAGE_STRING, argv[0]);
+//    if (options.output_path == NULL) fatal_error("No output path specified\n" USAGE_STRING, argv[0]);
+
+    if (options.output_path == NULL) {
+        options.output_path = pkcc_alloc(strlen(options.input_path) + 1);
+        strcpy((char *) options.output_path, options.input_path);
+        options.output_path[strlen(options.input_path) - 1] = 'j';
+    }
 
     static file_loader_t file_loader;
     file_loader_init(&file_loader, options.input_path);
@@ -92,6 +101,10 @@ int main(int argc, const char ** argv) {
     parser_init(&parser, &scanner, &preprocessor_output);
     __MAYBE_UNUSED free_list_node_t * parser_node = free_list_push(&free_list, &parser, (void (*)(void *)) parser_free);
 
+    if (options.phase4 || options.phase5) {
+        java_add_lib_definitions(&parser.type_checker.type_registry, &parser.type_checker.variable_registry);
+    }
+
     parser_run(&parser);
 
     if (options.dump_tree) syntax_tree_print(&parser.syntax_tree);
@@ -121,6 +134,20 @@ int main(int argc, const char ** argv) {
             parser.type_checker.token_buffer,
             parser.type_checker.syntax_tree
         );
+        fclose(out_file);
+
+        exit_and_free(0);
+    }
+
+    if (options.phase4 || options.phase5) {
+        FILE * out_file = fopen(options.output_path, "w");
+
+        java_code_generator_t jcg;
+        java_code_generator_init(&jcg, out_file, &parser.syntax_tree);
+        __MAYBE_UNUSED free_list_node_t * jcg_node = free_list_push(&free_list, &jcg, (void (*)(void *)) java_code_generator_free);
+
+        java_code_generator_run(&jcg);
+
         fclose(out_file);
 
         exit_and_free(0);

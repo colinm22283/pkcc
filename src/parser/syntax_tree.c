@@ -203,7 +203,17 @@ void syntax_tree_print_recur(token_buffer_t * token_buffer, syntax_tree_node_t *
         switch (n->token_type) {
             case RT_TERMINAL: {
                 printf("   TERMINAL ");
-                for (size_t i = 0; i < indent; i++) printf("│ ");
+
+                for (size_t i = 0; i < indent; i++) {
+                    if (options.color_enable) {
+                        if (i % 2 == 0) printf("\033[33m");
+                        else printf("\033[34m");
+                    }
+
+                    printf("│ ");
+                }
+                if (options.color_enable) printf("\033[0m");
+
                 char token_string[TOKEN_STRINGIFY_BUFFER_REQUIREMENT];
                 token_stringify(token_string, &token_buffer->tokens[n->terminal.position]);
                 printf("%s (line %zu)", token_string, token_buffer->tokens[n->terminal.position].line_index + 1);
@@ -230,7 +240,16 @@ void syntax_tree_print_recur(token_buffer_t * token_buffer, syntax_tree_node_t *
 
             case RT_NONTERMINAL: {
                 printf("NONTERMINAL ");
-                for (size_t i = 0; i < indent; i++) printf("│ ");
+
+                for (size_t i = 0; i < indent; i++) {
+                    if (options.color_enable) {
+                        if (i % 2 == 0) printf("\033[33m");
+                        else printf("\033[34m");
+                    }
+
+                    printf("│ ");
+                }
+                if (options.color_enable) printf("\033[0m");
 
                 printf("%s ", rules_nonterminal_name(n->nonterminal.nonterminal));
 

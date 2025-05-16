@@ -116,6 +116,8 @@ type_checker_type_t * type_checker_registry_parse_type(
     type_checker_type_t * ret_type = &entry->type;
 
     if (qualifier_count > 0) {
+        log_printf("Adding qualifier(s)\n");
+
         type_checker_registry_entry_t * qualifier_entry = pkcc_alloc(sizeof(type_checker_registry_entry_t));
         tr->entries[tr->size++] = qualifier_entry;
         if (tr->size == tr->capacity) {
@@ -126,6 +128,7 @@ type_checker_type_t * type_checker_registry_parse_type(
 
         qualifier_entry->scope = inner_type_node->scope;
         qualifier_entry->type.is_base = false;
+        qualifier_entry->type.derived_type.type = DTT_QUALIFIED;
         qualifier_entry->type.derived_type.qualified.qualifiers = pkcc_realloc(qualifiers, qualifier_count * sizeof(type_checker_derived_type_qualifier_t));
         qualifier_entry->type.derived_type.qualified.qualifier_count = qualifier_count;
         qualifier_entry->type.derived_type.qualified.subtype = &entry->type;

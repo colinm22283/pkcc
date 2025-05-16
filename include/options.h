@@ -11,12 +11,14 @@ typedef struct {
     bool phase1;
     bool phase2;
     bool phase3;
+    bool phase4;
+    bool phase5;
 
     bool preprocess_only;
     bool dump_tree;
 
-    const char * input_path;
-    const char * output_path;
+    char * input_path;
+    char * output_path;
 
     size_t include_directories_size, include_directories_capacity;
     const char ** include_directories;
@@ -27,6 +29,8 @@ typedef struct {
     size_t max_real_length;
     size_t max_identifier_length;
     size_t max_string_length;
+
+    const char * backend_implementation;
 } options_t;
 
 extern options_t options;
