@@ -10,7 +10,7 @@ FILES_EXPANDED=$(foreach f, $(FILES), $(TEST_DIR)/$f)
 .PHONY: run
 run: $(FILES_EXPANDED)
 	cd $(TEST_DIR) && $(COMMAND)
-	~/Krakatau/target/release/krak2 asm --out $(TEST_DIR)/main.class $(TEST_DIR)/main.j
+	/opt/krak2/krak2 asm --out $(TEST_DIR)/main.class $(TEST_DIR)/main.j
 	cd $(TEST_DIR) && javac -d . lib440.java
 	cd $(TEST_DIR) && java main lib440 ; echo "Exited with code $$?"
 
