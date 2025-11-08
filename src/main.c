@@ -18,7 +18,6 @@
 #include <parser/parser.h>
 #include <parser/rule_registry.h>
 #include <parser/phase2.h>
-#include <parser/type_checker/phase3.h>
 
 free_list_t free_list;
 
@@ -32,13 +31,6 @@ int main(int argc, const char ** argv) {
     rule_registry_init();
 
     if (options.input_path == NULL) fatal_error("No input path specified\n" USAGE_STRING, argv[0]);
-//    if (options.output_path == NULL) fatal_error("No output path specified\n" USAGE_STRING, argv[0]);
-
-    if (options.output_path == NULL) {
-        options.output_path = pkcc_alloc(strlen(options.input_path) + 1);
-        strcpy((char *) options.output_path, options.input_path);
-        options.output_path[strlen(options.input_path) - 1] = 'j';
-    }
 
     static file_loader_t file_loader;
     file_loader_init(&file_loader, options.input_path);
@@ -112,25 +104,7 @@ int main(int argc, const char ** argv) {
         exit_and_free(0);
     }
 
-    if (options.phase3) {
-        type_verifier_phase3(
-            stdout,
-            parser.type_checker.line_buffer,
-            parser.type_checker.token_buffer,
-            parser.type_checker.syntax_tree
-        );
 
-        FILE * out_file = fopen(options.output_path, "w");
-        type_verifier_phase3(
-            out_file,
-            parser.type_checker.line_buffer,
-            parser.type_checker.token_buffer,
-            parser.type_checker.syntax_tree
-        );
-        fclose(out_file);
-
-        exit_and_free(0);
-    }
 
     exit_and_free(0);
 }

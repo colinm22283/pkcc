@@ -78,8 +78,6 @@ size_t syntax_tree_parse_recur(
 
                     syntax_tree_node_list_node_t * new_node = pkcc_alloc(sizeof(syntax_tree_node_list_node_t));
                     new_node->token_type = RT_TERMINAL;
-                    new_node->type = NULL;
-                    new_node->desired_type = NULL;
                     new_node->terminal.terminal = rules[i]->tokens[j].terminal;
                     new_node->terminal.position = position;
 
@@ -116,8 +114,6 @@ size_t syntax_tree_parse_recur(
             else if (rules[i]->tokens[j].type == RT_NONTERMINAL) {
                 syntax_tree_node_list_node_t * new_node = pkcc_alloc(sizeof(syntax_tree_node_list_node_t));
                 new_node->token_type = RT_NONTERMINAL;
-                new_node->type = NULL;
-                new_node->desired_type = NULL;
                 new_node->nonterminal.nonterminal = rules[i]->tokens[j].nonterminal;
                 new_node->nonterminal.position = position;
                 syntax_tree_node_init(&new_node->nonterminal.tree);
@@ -218,24 +214,7 @@ void syntax_tree_print_recur(token_buffer_t * token_buffer, syntax_tree_node_t *
                 token_stringify(token_string, &token_buffer->tokens[n->terminal.position]);
                 printf("%s (line %zu)", token_string, token_buffer->tokens[n->terminal.position].line_index + 1);
 
-                printf("        DEPTH: '%zu'", n->scope->depth);
-
-                if (n->type != NULL) {
-                    char * type_string = type_checker_type_stringify(n->type);
-
-                    printf("        TYPE: '%s'", type_string);
-
-                    pkcc_free(type_string);
-                }
-
-                if (n->desired_type != NULL) {
-                    char * type_string = type_checker_type_stringify(n->desired_type);
-
-                    printf("        DESIRED TYPE: '%s'\n", type_string);
-
-                    pkcc_free(type_string);
-                }
-                else printf("\n");
+                printf("\n");
             } break;
 
             case RT_NONTERMINAL: {
@@ -253,24 +232,7 @@ void syntax_tree_print_recur(token_buffer_t * token_buffer, syntax_tree_node_t *
 
                 printf("%s ", rules_nonterminal_name(n->nonterminal.nonterminal));
 
-                printf("        DEPTH: '%zu'", n->scope->depth);
-
-                if (n->type != NULL) {
-                    char * type_string = type_checker_type_stringify(n->type);
-
-                    printf("        TYPE: '%s'", type_string);
-
-                    pkcc_free(type_string);
-                }
-
-                if (n->desired_type != NULL) {
-                    char * type_string = type_checker_type_stringify(n->desired_type);
-
-                    printf("        DESIRED TYPE: '%s'\n", type_string);
-
-                    pkcc_free(type_string);
-                }
-                else printf("\n");
+                printf("\n");
 
                 syntax_tree_print_recur(token_buffer, &n->nonterminal.tree, indent + 1);
             } break;

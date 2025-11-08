@@ -17,8 +17,8 @@ typedef struct {
     bool preprocess_only;
     bool dump_tree;
 
-    char * input_path;
-    char * output_path;
+    const char * input_path;
+    const char * output_path;
 
     size_t include_directories_size, include_directories_capacity;
     const char ** include_directories;
