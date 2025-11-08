@@ -20,9 +20,6 @@
 #include <parser/phase2.h>
 #include <parser/type_checker/phase3.h>
 
-#include <java/code_generator.h>
-#include <java/add_lib_definitions.h>
-
 free_list_t free_list;
 
 int main(int argc, const char ** argv) {
@@ -101,10 +98,6 @@ int main(int argc, const char ** argv) {
     parser_init(&parser, &scanner, &preprocessor_output);
     __MAYBE_UNUSED free_list_node_t * parser_node = free_list_push(&free_list, &parser, (void (*)(void *)) parser_free);
 
-    if (options.phase4 || options.phase5) {
-        java_add_lib_definitions(&parser.type_checker.type_registry, &parser.type_checker.variable_registry);
-    }
-
     parser_run(&parser);
 
     if (options.dump_tree) syntax_tree_print(&parser.syntax_tree);
@@ -134,20 +127,6 @@ int main(int argc, const char ** argv) {
             parser.type_checker.token_buffer,
             parser.type_checker.syntax_tree
         );
-        fclose(out_file);
-
-        exit_and_free(0);
-    }
-
-    if (options.phase4 || options.phase5) {
-        FILE * out_file = fopen(options.output_path, "w");
-
-        java_code_generator_t jcg;
-        java_code_generator_init(&jcg, out_file, &parser.syntax_tree);
-        __MAYBE_UNUSED free_list_node_t * jcg_node = free_list_push(&free_list, &jcg, (void (*)(void *)) java_code_generator_free);
-
-        java_code_generator_run(&jcg);
-
         fclose(out_file);
 
         exit_and_free(0);
