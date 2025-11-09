@@ -4,9 +4,11 @@
 
 #include <scanner/token_stringify.h>
 
+#include <grammar/rules.h>
+#include <grammar/nonterminals.h>
+
 #include <parser/syntax_tree.h>
 #include <parser/rule_registry.h>
-#include <parser/rules.h>
 
 #include <debug/error_handler.h>
 #include <debug/log.h>

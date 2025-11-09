@@ -1,12 +1,10 @@
 #include <parser/rule_registry.h>
 
-#include <parser/rules.h>
+#include <grammar/rules.h>
 
 #include <alloc.h>
 
-void rule_registry_init(void) {
-
-}
+void rule_registry_init(void) { }
 
 rule_registry_result_t rule_registry_lookup(nonterminal_t nonterminal) {
     size_t rule_count = 0;

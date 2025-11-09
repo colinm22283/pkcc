@@ -22,6 +22,8 @@ options_t options = {
     .preprocess_only = false,
     .dump_tree = false,
 
+    .dump_typed_tree = false,
+
     .input_path = NULL,
     .output_path = NULL,
 
@@ -168,6 +170,9 @@ void options_parse_cli(int argc, const char ** argv) {
                     }
                     else if (strncmp(data, "dump-tree", 9) == 0) {
                         options.dump_tree = true;
+                    }
+                    else if (strncmp(data, "dump-typed-tree", 9) == 0) {
+                        options.dump_typed_tree = true;
                     }
                     else {
                         fatal_error("Invalid -f switch\nInvalid variable name\n");

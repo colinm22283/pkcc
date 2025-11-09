@@ -1,4 +1,4 @@
-#include <parser/rules.h>
+#include <parser/_rules.h>
 
 rule_token_t empty_tokens[] = { };
 
