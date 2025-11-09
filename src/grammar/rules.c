@@ -507,12 +507,16 @@ DEFINE_RULE_TOKENS(tokens_enumerator_list_1,
 
 DEFINE_RULE_TOKENS(tokens_enumerator_0,
     DEFINE_TERMINAL_RULE_TOKEN(token_number_identifier())
-    );
-DEFINE_RULE_TOKENS(tokens_enumerator_0,
+);
+DEFINE_RULE_TOKENS(tokens_enumerator_1,
     DEFINE_TERMINAL_RULE_TOKEN(token_number_identifier()),
     DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_DIRECT_ASSIGNMENT)),
     DEFINE_NONTERMINAL_RULE_TOKEN(NT_CONSTANT_EXPRESSION)
 );
+
+DEFINE_RULE_TOKENS(tokens_type_qualifier_0, DEFINE_TERMINAL_RULE_TOKEN(token_number_keyword(SCANNER_KEYWORD_TYPE_CONST)));
+DEFINE_RULE_TOKENS(tokens_type_qualifier_1, DEFINE_TERMINAL_RULE_TOKEN(token_number_keyword(SCANNER_KEYWORD_TYPE_RESTRICT)));
+DEFINE_RULE_TOKENS(tokens_type_qualifier_2, DEFINE_TERMINAL_RULE_TOKEN(token_number_keyword(SCANNER_KEYWORD_TYPE_VOLATILE)));
 
 rule_t all_rules[RULE_COUNT] = {
     DEFINE_RULE_MULTI(NT_TRANSLATION_UNIT,
@@ -760,5 +764,10 @@ rule_t all_rules[RULE_COUNT] = {
     DEFINE_RULE_MULTI(NT_ENUMERATOR_LIST,
         tokens_enumerator_list_0,
         tokens_enumerator_list_1
+    ),
+
+    DEFINE_RULE_MULTI(NT_ENUMERATOR,
+        tokens_enumerator_0,
+        tokens_enumerator_1
     ),
 };

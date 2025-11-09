@@ -2,6 +2,6 @@
 
 #include <parser/rule.h>
 
-#define RULE_COUNT (136)
+#define RULE_COUNT (138)
 
 extern rule_t all_rules[RULE_COUNT];
