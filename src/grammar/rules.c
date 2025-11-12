@@ -557,6 +557,173 @@ DEFINE_RULE_TOKENS(tokens_identifier_list_1,
     DEFINE_TERMINAL_RULE_TOKEN(token_number_identifier()),
 );
 
+DEFINE_RULE_TOKENS(tokens_type_name_0,
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_SPECIFIER_QUALIFIER_LIST)
+);
+DEFINE_RULE_TOKENS(tokens_type_name_1,
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_SPECIFIER_QUALIFIER_LIST),
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_ABSTRACT_DECLARATOR)
+);
+
+DEFINE_RULE_TOKENS(tokens_abstract_declarator_0,
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_POINTER)
+);
+DEFINE_RULE_TOKENS(tokens_abstract_declarator_1,
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_DIRECT_ABSTRACT_DECLARATOR)
+);
+DEFINE_RULE_TOKENS(tokens_abstract_declarator_2,
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_POINTER),
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_DIRECT_ABSTRACT_DECLARATOR)
+);
+
+DEFINE_RULE_TOKENS(tokens_direct_abstract_declarator_0,
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_PAREN_OPEN)),
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_ABSTRACT_DECLARATOR),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_PAREN_CLOSE))
+);
+DEFINE_RULE_TOKENS(tokens_direct_abstract_declarator_1,
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_SQUARE_OPEN)),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_SQUARE_CLOSE))
+);
+DEFINE_RULE_TOKENS(tokens_direct_abstract_declarator_2,
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_SQUARE_OPEN)),
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_ASSIGNMENT_EXPRESSION),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_SQUARE_CLOSE))
+    );
+DEFINE_RULE_TOKENS(tokens_direct_abstract_declarator_3,
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_DIRECT_ABSTRACT_DECLARATOR),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_SQUARE_OPEN)),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_SQUARE_CLOSE))
+);
+DEFINE_RULE_TOKENS(tokens_direct_abstract_declarator_4,
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_DIRECT_ABSTRACT_DECLARATOR),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_SQUARE_OPEN)),
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_ASSIGNMENT_EXPRESSION),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_SQUARE_CLOSE))
+);
+DEFINE_RULE_TOKENS(tokens_direct_abstract_declarator_5,
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_SQUARE_OPEN)),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_STAR)),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_SQUARE_CLOSE))
+);
+DEFINE_RULE_TOKENS(tokens_direct_abstract_declarator_6,
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_DIRECT_ABSTRACT_DECLARATOR),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_SQUARE_OPEN)),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_STAR)),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_SQUARE_CLOSE))
+);
+DEFINE_RULE_TOKENS(tokens_direct_abstract_declarator_7,
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_PAREN_OPEN)),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_PAREN_CLOSE))
+);
+DEFINE_RULE_TOKENS(tokens_direct_abstract_declarator_8,
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_PAREN_OPEN)),
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_PARAMETER_TYPE_LIST),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_PAREN_CLOSE))
+);
+DEFINE_RULE_TOKENS(tokens_direct_abstract_declarator_9,
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_DIRECT_ABSTRACT_DECLARATOR),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_PAREN_OPEN)),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_PAREN_CLOSE))
+);
+DEFINE_RULE_TOKENS(tokens_direct_abstract_declarator_10,
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_DIRECT_ABSTRACT_DECLARATOR),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_PAREN_OPEN)),
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_PARAMETER_TYPE_LIST),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_PAREN_CLOSE))
+);
+
+DEFINE_RULE_TOKENS(tokens_initializer_0,
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_ASSIGNMENT_EXPRESSION)
+);
+DEFINE_RULE_TOKENS(tokens_initializer_1,
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_CURLY_OPEN)),
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_ASSIGNMENT_EXPRESSION),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_CURLY_CLOSE))
+);
+DEFINE_RULE_TOKENS(tokens_initializer_2,
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_CURLY_OPEN)),
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_ASSIGNMENT_EXPRESSION),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_CURLY_CLOSE)),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_COMMA))
+);
+
+DEFINE_RULE_TOKENS(tokens_initializer_list_0,
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_INITIALIZER)
+);
+DEFINE_RULE_TOKENS(tokens_initializer_list_1,
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_DESIGNATION),
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_INITIALIZER)
+);
+DEFINE_RULE_TOKENS(tokens_initializer_list_2,
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_INITIALIZER_LIST),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_COMMA)),
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_INITIALIZER)
+);
+DEFINE_RULE_TOKENS(tokens_initializer_list_3,
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_INITIALIZER_LIST),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_COMMA)),
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_DESIGNATION),
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_INITIALIZER)
+);
+
+DEFINE_RULE_TOKENS(tokens_designation_0,
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_DESIGNATOR_LIST),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_DIRECT_ASSIGNMENT))
+);
+
+DEFINE_RULE_TOKENS(tokens_designator_list_0,
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_DESIGNATOR)
+);
+DEFINE_RULE_TOKENS(tokens_designator_list_1,
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_DESIGNATOR_LIST),
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_DESIGNATOR)
+);
+
+DEFINE_RULE_TOKENS(tokens_designator_0,
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_SQUARE_OPEN)),
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_CONSTANT_EXPRESSION),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_SQUARE_CLOSE))
+);
+DEFINE_RULE_TOKENS(tokens_designator_1,
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_PERIOD)),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_identifier())
+);
+
+DEFINE_RULE_TOKENS(tokens_statement_0, DEFINE_NONTERMINAL_RULE_TOKEN(NT_LABELED_STATEMENT));
+DEFINE_RULE_TOKENS(tokens_statement_1, DEFINE_NONTERMINAL_RULE_TOKEN(NT_COMPOUND_STATEMENT));
+DEFINE_RULE_TOKENS(tokens_statement_2, DEFINE_NONTERMINAL_RULE_TOKEN(NT_EXPRESSION_STATEMENT));
+DEFINE_RULE_TOKENS(tokens_statement_3, DEFINE_NONTERMINAL_RULE_TOKEN(NT_SELECTION_STATEMENT));
+DEFINE_RULE_TOKENS(tokens_statement_4, DEFINE_NONTERMINAL_RULE_TOKEN(NT_ITERATION_STATEMENT));
+DEFINE_RULE_TOKENS(tokens_statement_5, DEFINE_NONTERMINAL_RULE_TOKEN(NT_JUMP_STATEMENT));
+
+DEFINE_RULE_TOKENS(tokens_labeled_statement_0,
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_identifier()),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_COLON)),
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_STATEMENT)
+);
+DEFINE_RULE_TOKENS(tokens_labeled_statement_1,
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_keyword(SCANNER_KEYWORD_TYPE_CASE)),
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_CONSTANT_EXPRESSION),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_COLON)),
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_STATEMENT)
+);
+DEFINE_RULE_TOKENS(tokens_labeled_statement_2,
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_keyword(SCANNER_KEYWORD_TYPE_DEFAULT)),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_COLON)),
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_STATEMENT)
+);
+
+DEFINE_RULE_TOKENS(tokens_compound_statement_0,
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_CURLY_OPEN)),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_CURLY_CLOSE))
+    );
+DEFINE_RULE_TOKENS(tokens_compound_statement_1,
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_CURLY_OPEN)),
+    DEFINE_NONTERMINAL_RULE_TOKEN(NT_BLOCK_ITEM_LIST),
+    DEFINE_TERMINAL_RULE_TOKEN(token_number_punctuation(SCANNER_PUNCTUATION_TYPE_CURLY_CLOSE))
+);
+
 rule_t all_rules[RULE_COUNT] = {
     DEFINE_RULE_MULTI(NT_TRANSLATION_UNIT,
         tokens_tranlation_unit_0,
@@ -835,5 +1002,76 @@ rule_t all_rules[RULE_COUNT] = {
     DEFINE_RULE_MULTI(NT_IDENTIFIER_LIST,
         tokens_identifier_list_0,
         tokens_identifier_list_1
+    ),
+
+    DEFINE_RULE_MULTI(NT_TYPE_NAME,
+        tokens_type_name_0,
+        tokens_type_name_1
+    ),
+
+    DEFINE_RULE_MULTI(NT_ABSTRACT_DECLARATOR,
+        tokens_abstract_declarator_0,
+        tokens_abstract_declarator_1,
+        tokens_abstract_declarator_2
+    ),
+
+    DEFINE_RULE_MULTI(NT_DIRECT_ABSTRACT_DECLARATOR,
+        tokens_direct_abstract_declarator_0,
+        tokens_direct_abstract_declarator_1,
+        tokens_direct_abstract_declarator_2,
+        tokens_direct_abstract_declarator_3,
+        tokens_direct_abstract_declarator_4,
+        tokens_direct_abstract_declarator_5,
+        tokens_direct_abstract_declarator_6,
+        tokens_direct_abstract_declarator_8,
+        tokens_direct_abstract_declarator_9,
+        tokens_direct_abstract_declarator_10
+    ),
+
+    DEFINE_RULE_MULTI(NT_INITIALIZER,
+        tokens_initializer_0,
+        tokens_initializer_1,
+        tokens_initializer_2
+    ),
+
+    DEFINE_RULE_MULTI(NT_INITIALIZER_LIST,
+        tokens_initializer_list_0,
+        tokens_initializer_list_1,
+        tokens_initializer_list_2,
+        tokens_initializer_list_3
+    ),
+
+    DEFINE_RULE_MULTI(NT_DESIGNATION,
+        tokens_designation_0
+    ),
+
+    DEFINE_RULE_MULTI(NT_DESIGNATOR_LIST,
+        tokens_designator_list_0,
+        tokens_designator_list_1
+    ),
+
+    DEFINE_RULE_MULTI(NT_DESIGNATOR,
+        tokens_designator_0,
+        tokens_designator_1
+    ),
+
+    DEFINE_RULE_MULTI(NT_STATEMENT,
+        tokens_statement_0,
+        tokens_statement_1,
+        tokens_statement_2,
+        tokens_statement_3,
+        tokens_statement_4,
+        tokens_statement_5
+    ),
+
+    DEFINE_RULE_MULTI(NT_LABELED_STATEMENT,
+        tokens_labeled_statement_0,
+        tokens_labeled_statement_1,
+        tokens_labeled_statement_2
+    ),
+
+    DEFINE_RULE_MULTI(NT_COMPOUND_STATEMENT,
+        tokens_compound_statement_0,
+        tokens_compound_statement_1
     ),
 };
