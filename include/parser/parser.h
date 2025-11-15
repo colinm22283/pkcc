@@ -2,9 +2,11 @@
 
 #include <scanner/scanner.h>
 
+#include <parser/parse_graph.h>
 #include <parser/syntax_tree.h>
 
 typedef struct {
+    parse_graph_t parse_graph;
     syntax_tree_t syntax_tree;
 } parser_t;
 

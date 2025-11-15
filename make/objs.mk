@@ -29,6 +29,7 @@ OBJS+=$(OBJ_DIR)/scanner/parse_number.o
 OBJS+=$(OBJ_DIR)/grammar/rules.o
 
 OBJS+=$(OBJ_DIR)/parser/parser.o
+OBJS+=$(OBJ_DIR)/parser/parse_graph.o
 OBJS+=$(OBJ_DIR)/parser/syntax_tree.o
 OBJS+=$(OBJ_DIR)/parser/rule_registry.o
 OBJS+=$(OBJ_DIR)/parser/syntax_tree_traverser.o

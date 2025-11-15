@@ -1,8 +1,9 @@
-//
-// Created by colin on 11/14/25.
-//
+#pragma once
 
-#ifndef PARSE_GRAPH_H
-#define PARSE_GRAPH_H
+typedef struct {
+} parse_graph_t;
 
-#endif //PARSE_GRAPH_H
+void parse_graph_init(parse_graph_t * parse_graph);
+void parse_graph_free(parse_graph_t * parse_graph);
+
+void parse_graph_load(parse_graph_t * parse_graph);
