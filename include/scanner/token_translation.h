@@ -4,7 +4,7 @@
 
 #include <scanner/token.h>
 
-#define KEYWORD_TRANSLATIONS_COUNT (36)
+#define KEYWORD_TRANSLATIONS_COUNT (37)
 #define PUNCTUATION_TRANSLATIONS_COUNT (48)
 
 typedef struct {

@@ -29,6 +29,8 @@ typedef struct syntax_tree_node_list_node_s {
         } terminal;
     };
 
+    void * semantic_info;
+
     struct syntax_tree_node_list_node_s * prev;
     struct syntax_tree_node_list_node_s * next;
 } syntax_tree_node_list_node_t;

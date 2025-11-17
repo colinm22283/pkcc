@@ -4,12 +4,15 @@
 
 #include <scanner/token_stringify.h>
 
+#include <grammar/rules.h>
+#include <grammar/nonterminals.h>
+
 #include <parser/syntax_tree.h>
 #include <parser/rule_registry.h>
-#include <parser/rules.h>
 
 #include <debug/error_handler.h>
 #include <debug/log.h>
+#include <debug/ansi.h>
 
 #include <alloc.h>
 
@@ -40,7 +43,7 @@ size_t syntax_tree_parse_recur(
 
     rule_registry_result_t registry_result = rule_registry_lookup(nonterminal);
 
-    log_printf("\033[45mPARSING NONTERMINAL %s\n", rules_nonterminal_name(nonterminal));
+    log_printf(A_BG_MAGENTA "PARSING NONTERMINAL %s\n", rules_nonterminal_name(nonterminal));
 
     size_t rule_count = registry_result.rule_count;
     rule_t ** rules = registry_result.rules;
@@ -57,13 +60,13 @@ size_t syntax_tree_parse_recur(
             for (size_t k = 0; k < token_buffer->token_count; k++) {
                 char buffer[TOKEN_STRINGIFY_BUFFER_REQUIREMENT];
                 token_stringify(buffer, &token_buffer->tokens[k]);
-                if (k == position) log_printf("\033[41m%s", buffer);
+                if (k == position) log_printf(A_BG_RED "%s", buffer);
                 else log_printf("%s", buffer);
 
                 log_printf("    ");
             }
 
-            if (token_buffer->token_count == position) log_printf("\033[41m$\n");
+            if (token_buffer->token_count == position) log_printf(A_BG_RED "$\n");
             else log_printf("$\n");
 
             if (rules[i]->tokens[j].type == RT_END) {
@@ -138,7 +141,7 @@ size_t syntax_tree_parse_recur(
                     pkcc_free(new_node);
                 }
 
-                log_printf("\033[45mRETURNING TO %s with %zu\n", rules_nonterminal_name(nonterminal), result);
+                log_printf(A_BG_MAGENTA "RETURNING TO %s with %zu\n", rules_nonterminal_name(nonterminal), result);
 
                 if (result == SYNTAX_TREE_PARSE_SUCCESS) {
                     rule_registry_result_free(&registry_result);
@@ -202,13 +205,13 @@ void syntax_tree_print_recur(token_buffer_t * token_buffer, syntax_tree_node_t *
 
                 for (size_t i = 0; i < indent; i++) {
                     if (options.color_enable) {
-                        if (i % 2 == 0) printf("\033[33m");
-                        else printf("\033[34m");
+                        if (i % 2 == 0) printf(A_FG_YELLOW);
+                        else printf(A_FG_BLUE);
                     }
 
                     printf("│ ");
                 }
-                if (options.color_enable) printf("\033[0m");
+                if (options.color_enable) printf(A_RESET);
 
                 char token_string[TOKEN_STRINGIFY_BUFFER_REQUIREMENT];
                 token_stringify(token_string, &token_buffer->tokens[n->terminal.position]);
@@ -222,13 +225,13 @@ void syntax_tree_print_recur(token_buffer_t * token_buffer, syntax_tree_node_t *
 
                 for (size_t i = 0; i < indent; i++) {
                     if (options.color_enable) {
-                        if (i % 2 == 0) printf("\033[33m");
-                        else printf("\033[34m");
+                        if (i % 2 == 0) printf(A_FG_YELLOW);
+                        else printf(A_FG_BLUE);
                     }
 
                     printf("│ ");
                 }
-                if (options.color_enable) printf("\033[0m");
+                if (options.color_enable) printf(A_RESET);
 
                 printf("%s ", rules_nonterminal_name(n->nonterminal.nonterminal));
 

@@ -1,5 +1,5 @@
 INCLUDE_PARAMS=$(foreach d, $(INCLUDE_DIRS), -I$d)
-HEADERS=$(foreach d, $(INCLUDE_DIRS), $(shell find $d -type f -name '*.h'))
+HEADERS+=$(foreach d, $(INCLUDE_DIRS), $(shell find $d -type f -name '*.h'))
 
 OPTIMIZATION?=3
 

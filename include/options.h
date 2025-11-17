@@ -17,6 +17,8 @@ typedef struct {
     bool preprocess_only;
     bool dump_tree;
 
+    bool dump_typed_tree;
+
     const char * input_path;
     const char * output_path;
 

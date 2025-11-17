@@ -17,7 +17,8 @@
 
 #include <parser/parser.h>
 #include <parser/rule_registry.h>
-#include <parser/phase2.h>
+
+#include <semantic/semantic.h>
 
 free_list_t free_list;
 
@@ -94,17 +95,13 @@ int main(int argc, const char ** argv) {
 
     if (options.dump_tree) syntax_tree_print(&parser.syntax_tree);
 
-    if (options.phase2) {
-        parser_print_phase2(stdout, &parser);
+    static semantic_t semantic;
+    semantic_init(&semantic, &parser);
+    __MAYBE_UNUSED free_list_node_t * semantic_node = free_list_push(&free_list, &semantic, (void (*)(void *)) semantic_free);
 
-        FILE * out_file = fopen(options.output_path, "w");
-        parser_print_phase2(out_file, &parser);
-        fclose(out_file);
+    semantic_run(&semantic);
 
-        exit_and_free(0);
-    }
-
-
+    if (options.dump_typed_tree) semantic_typed_tree_print(&semantic);
 
     exit_and_free(0);
 }

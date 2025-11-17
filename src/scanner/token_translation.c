@@ -17,6 +17,11 @@ keyword_translation_entry_t keyword_translations[KEYWORD_TRANSLATIONS_COUNT] = {
         .keyword = SCANNER_KEYWORD_TYPE_REGISTER,
     },
     (keyword_translation_entry_t) {
+        .string = "auto",
+        .length = 4,
+        .keyword = SCANNER_KEYWORD_TYPE_AUTO,
+    },
+    (keyword_translation_entry_t) {
         .string = "restrict",
         .length = 8,
         .keyword = SCANNER_KEYWORD_TYPE_RESTRICT,
