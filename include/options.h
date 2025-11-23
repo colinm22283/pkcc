@@ -15,6 +15,7 @@ typedef struct {
     bool phase5;
 
     bool preprocess_only;
+    bool dump_parse_tables;
     bool dump_tree;
 
     bool dump_typed_tree;

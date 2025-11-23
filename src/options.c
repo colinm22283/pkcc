@@ -20,6 +20,7 @@ options_t options = {
     .phase5 = false,
 
     .preprocess_only = false,
+    .dump_parse_tables = false,
     .dump_tree = false,
 
     .dump_typed_tree = false,
@@ -167,6 +168,9 @@ void options_parse_cli(int argc, const char ** argv) {
                 else {
                     if (strncmp(data, "no-diagnostics-color", 20) == 0) {
                         options.color_enable = false;
+                    }
+                    else if (strncmp(data, "dump-parse-tables", 9) == 0) {
+                        options.dump_parse_tables = true;
                     }
                     else if (strncmp(data, "dump-tree", 9) == 0) {
                         options.dump_tree = true;

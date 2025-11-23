@@ -93,6 +93,8 @@ int main(int argc, const char ** argv) {
 
     parser_run(&parser);
 
+    if (options.dump_parse_tables) parse_tables_print(&parser.parse_tables);
+
     if (options.dump_tree) syntax_tree_print(&parser.syntax_tree);
 
     static semantic_t semantic;

@@ -1,6 +1,6 @@
 include $(TEST_INCLUDE)
 
-ARGUMENTS=-d -3 -fdump-tree -fdump-typed-tree -I $(TEST_DIR) $(TEST_DIR)/test.c -o $(TEST_DIR)/test.txt
+ARGUMENTS=-d -fdump-parse-tables -fdump-tree -fdump-typed-tree -I $(TEST_DIR) $(TEST_DIR)/test.c -o $(TEST_DIR)/test.txt
 COMMAND=$(PKCC) $(ARGUMENTS)
 
 FILES=test.c
