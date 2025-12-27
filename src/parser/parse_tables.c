@@ -68,78 +68,111 @@ parse_state_t * parse_tables_add_state(parse_tables_t * parse_tables) {
         parse_tables->parse_states = pkcc_realloc(parse_tables->parse_states, parse_tables->state_capacity * sizeof(parse_state_t *));
     }
 
+    new_state->index = parse_tables->state_count - 1;
+
     new_state->production_count = 0;
     new_state->productions = pkcc_alloc(1);
 
     return new_state;
 }
 
-void eval_states_recur(parse_tables_t * parse_tables, parse_state_t * state) {
+void eval_states_recur(parse_tables_t * parse_tables, parse_state_t * state, size_t depth, size_t source) {
+    if (depth == 3) {
+        return; // TODO: remove
+        fatal_error("State evaluation limit reached!");
+    }
+
     size_t nt_count = 0;
     nonterminal_t * read_nts = pkcc_alloc(1);
 
     for (size_t i = 0; i < state->production_count; i++) {
         rule_t * rule = state->productions[i]->rule;
-        rule_token_t * tok = &rule->tokens[state->productions[i]->position];
 
-        switch (tok->type) {
-            case RT_NONTERMINAL: {
-                bool already_checked = false;
-                for (size_t j = 0; j < nt_count; j++) {
-                    if (read_nts[j] == tok->nonterminal) {
-                        already_checked = true;
-                        break;
+        if (state->productions[i]->position < rule->token_count) {
+            rule_token_t * tok = &rule->tokens[state->productions[i]->position];
+
+            switch (tok->type) {
+                case RT_NONTERMINAL: {
+                    bool already_checked = false;
+                    for (size_t j = 0; j < nt_count; j++) {
+                        if (read_nts[j] == tok->nonterminal) {
+                            already_checked = true;
+                            break;
+                        }
                     }
-                }
-                if (already_checked) break;
+                    if (already_checked) break;
 
-                rule_registry_result_t reg_res = rule_registry_lookup(tok->nonterminal);
+                    rule_registry_result_t reg_res = rule_registry_lookup(tok->nonterminal);
 
-                nt_count++;
-                read_nts = pkcc_realloc(read_nts, nt_count * sizeof(nonterminal_t));
+                    nt_count++;
+                    read_nts = pkcc_realloc(read_nts, nt_count * sizeof(nonterminal_t));
 
-                read_nts[nt_count - 1] = tok->nonterminal;
+                    read_nts[nt_count - 1] = tok->nonterminal;
 
-                for (size_t j = 0; j < reg_res.rule_count; j++) {
-                    parse_state_production_t * prod = pkcc_alloc(sizeof(parse_state_production_t));
+                    for (size_t j = 0; j < reg_res.rule_count; j++) {
+                        parse_state_production_t * prod = pkcc_alloc(sizeof(parse_state_production_t));
 
-                    prod->position = 0;
-                    prod->shift = 0;
-                    prod->reduce = 0;
-                    prod->lookahead = NULL;
-                    prod->rule = reg_res.rules[j];
+                        prod->position = 0;
+                        prod->shift = NULL_SHIFT;
+                        prod->reduce = NULL_REDUCE;
+                        prod->lookahead = NULL;
+                        prod->rule = reg_res.rules[j];
 
-                    state->production_count++;
-                    state->productions = pkcc_realloc(state->productions, state->production_count * sizeof(parse_state_production_t *));
+                        state->production_count++;
+                        state->productions = pkcc_realloc(state->productions, state->production_count * sizeof(parse_state_production_t *));
 
-                    state->productions[state->production_count - 1] = prod;
-
-                    if (prod->position < prod->rule->token_count) {
-                        parse_state_t * new_state = parse_tables_add_state(parse_tables);
-
-                        new_state->production_count = 1;
-                        new_state->productions = pkcc_realloc(new_state->productions, new_state->production_count * sizeof(parse_state_production_t *));
-
-                        parse_state_production_t * new_prod = new_state->productions[0] = pkcc_alloc(sizeof(parse_state_production_t));
-
-                        memcpy(new_prod, prod, sizeof(parse_state_production_t));
-
-                        new_prod->position++;
-
-                        printf("POS: %zu\n", new_prod->position);
-
-                        eval_states_recur(parse_tables, new_state);
+                        state->productions[state->production_count - 1] = prod;
                     }
-                }
 
-                rule_registry_result_free(&reg_res);
-            } break;
+                    rule_registry_result_free(&reg_res);
+                } break;
 
-            default: break;
+                default: break;
+            }
         }
     }
 
     pkcc_free(read_nts);
+
+    for (size_t i = 0; i < state->production_count; i++) {
+        parse_state_production_t * prod = state->productions[i];
+
+        if (prod->position < prod->rule->token_count) {
+            parse_state_t * identical_state = NULL;
+
+            for (size_t j = 0; j < parse_tables->state_count; j++) {
+                for (size_t k = 0; k < 1; k++) { // parse_tables->parse_states[j]->production_count
+                    if (
+                        parse_tables->parse_states[j]->productions[k]->rule == prod->rule &&
+                        parse_tables->parse_states[j]->productions[k]->position == prod->position + 1
+                    ) {
+                        identical_state = parse_tables->parse_states[j];
+                    }
+                }
+            }
+
+            if (identical_state != NULL) continue;
+
+            parse_state_t * new_state = parse_tables_add_state(parse_tables);
+
+            prod->shift = new_state->index;
+
+            new_state->production_count = 1;
+            new_state->productions = pkcc_realloc(new_state->productions, new_state->production_count * sizeof(parse_state_production_t *));
+
+            parse_state_production_t * new_prod = new_state->productions[0] = pkcc_alloc(sizeof(parse_state_production_t));
+
+            memcpy(new_prod, prod, sizeof(parse_state_production_t));
+
+            new_prod->shift = NULL_SHIFT;
+            new_prod->position++;
+
+            eval_states_recur(parse_tables, new_state, depth + 1, state->index);
+        }
+        else {
+            prod->reduce = source;
+        }
+    }
 }
 
 void parse_tables_init(parse_tables_t * parse_tables) {
@@ -179,8 +212,10 @@ void parse_tables_load(parse_tables_t * parse_tables) {
     root_production->position = 0;
     root_production->lookahead = NULL;
     root_production->rule = &root_rule;
+    root_production->shift = NULL_SHIFT;
+    root_production->reduce = NULL_REDUCE;
 
-    eval_states_recur(parse_tables, root_state);
+    eval_states_recur(parse_tables, root_state, 0, NULL_REDUCE);
 }
 
 void parse_tables_print(parse_tables_t * parse_tables) {
@@ -190,13 +225,14 @@ void parse_tables_print(parse_tables_t * parse_tables) {
         printf("STATE %zu:\n", i);
 
         for (size_t j = 0; j < parse_tables->parse_states[i]->production_count; j++) {
-            rule_t * rule = parse_tables->parse_states[i]->productions[j]->rule;
+            parse_state_production_t * prod = parse_tables->parse_states[i]->productions[j];
+            rule_t * rule = prod->rule;
 
             printf("  %30s -> ", rules_nonterminal_name(rule->nonterminal));
 
             for (size_t k = 0; k < rule->token_count; k++) {
-                if (k == parse_tables->parse_states[i]->productions[j]->position) {
-                    printf("* ");
+                if (k == prod->position) {
+                    printf("∘ ");
                 }
 
                 switch (rule->tokens[k].type) {
@@ -213,6 +249,14 @@ void parse_tables_print(parse_tables_t * parse_tables) {
                     } break;
                 }
             }
+
+            if (rule->token_count == prod->position) {
+                printf("∘");
+            }
+
+            if (prod->shift != NULL_SHIFT) printf("    SHIFT %zu", prod->shift);
+
+            if (prod->reduce != NULL_SHIFT) printf("    REDUCE %zu", prod->reduce);
 
             printf("\n");
         }

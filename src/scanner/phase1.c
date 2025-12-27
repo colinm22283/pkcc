@@ -206,6 +206,7 @@ const char * scanner_stringify_phase1(token_t * token) {
                 case SCANNER_KEYWORD_TYPE_INT: return "int";
                 case SCANNER_KEYWORD_TYPE_LONG: return "long";
                 case SCANNER_KEYWORD_TYPE_REGISTER: return "register";
+                case SCANNER_KEYWORD_TYPE_AUTO: return "auto";
                 case SCANNER_KEYWORD_TYPE_RESTRICT: return "restrict";
                 case SCANNER_KEYWORD_TYPE_RETURN: return "return";
                 case SCANNER_KEYWORD_TYPE_SHORT: return "short";
