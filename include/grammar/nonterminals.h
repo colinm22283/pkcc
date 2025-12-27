@@ -117,6 +117,7 @@ enum {
 
     NT_COUNT,
 
+    NT_START,
     NT_NULL,
 };
 
@@ -234,6 +235,7 @@ static inline const char * rules_nonterminal_name(nonterminal_t nonterminal) {
 
         case NT_COUNT: return "NT_COUNT";
 
+        case NT_START: return "NT_START";
         case NT_NULL: return "NT_NULL";
 
         default: return "UNKNOWN";
