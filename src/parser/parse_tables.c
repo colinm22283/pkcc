@@ -5,8 +5,11 @@
 
 #include <alloc.h>
 
-rule_token_t root_tokens[] = { { .type = RT_NONTERMINAL, .nonterminal = NT_TRANSLATION_UNIT, } };
-rule_t root_rule = { .nonterminal = NT_START, .token_count = 1, .tokens = root_tokens, };
+rule_token_t root_tokens[] = {
+    { .type = RT_NONTERMINAL, .nonterminal = NT_TRANSLATION_UNIT, },
+    { .type = RT_END, }
+};
+rule_t root_rule = { .nonterminal = NT_START, .token_count = 2, .tokens = root_tokens, };
 
 bool first_table_row_contains(parse_tables_first_node_t * node, token_number_t terminal) {
     for (size_t i = 0; i < node->element_count; i++) {
@@ -59,6 +62,116 @@ void first_table_recur(parse_tables_first_node_t * first_table, nonterminal_t no
     rule_registry_result_free(&rule_result);
 }
 
+void follow_table_generate(parse_tables_t * parse_tables) {
+    for (size_t i = 0; i < parse_tables->state_count; i++) {
+        parse_state_t * state = parse_tables->parse_states[i];
+
+        size_t nt_count = 0;
+        nonterminal_t * nts = pkcc_alloc(1);
+
+        for (size_t j = 0; j < state->production_count; j++) {
+            parse_state_production_t * prod = state->productions[j];
+
+            for (size_t k = 0; k < prod->rule->token_count; k++) {
+                rule_token_t * token = &prod->rule->tokens[k];
+
+                if (token->type == RT_NONTERMINAL) {
+                    nt_count++;
+
+                    nts = pkcc_realloc(nts, nt_count * sizeof(nonterminal_t));
+
+                    nts[nt_count - 1] = token->nonterminal;
+                }
+            }
+        }
+
+        for (size_t j = 0; j < nt_count; j++) {
+            state->follow_node_count++;
+
+            state->follow_nodes = pkcc_realloc(state->follow_nodes, state->follow_node_count * sizeof(parse_tables_follow_node_t));
+
+            parse_tables_follow_node_t * follow = &state->follow_nodes[state->follow_node_count - 1];
+
+            follow->nonterminal = nts[j];
+            follow->token_count = 0;
+            follow->tokens = pkcc_alloc(1);
+
+            for (size_t k = 0; k < state->production_count; k++) {
+                if (state->productions[k]->position + 1 < state->productions[k]->rule->token_count) {
+                    rule_token_t * token = &state->productions[k]->rule->tokens[state->productions[k]->position];
+                    rule_token_t * next_token = &state->productions[k]->rule->tokens[state->productions[k]->position + 1];
+
+                    if (token->type == RT_NONTERMINAL && token->nonterminal == nts[j]) {
+                        switch (next_token->type) {
+                            case RT_TERMINAL: {
+                                bool skip = false;
+                                for (size_t m = 0; m < follow->token_count; m++) {
+                                    if (follow->tokens[m].type == RT_TERMINAL && follow->tokens[m].terminal == next_token->terminal) {
+                                        skip = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!skip) {
+                                    follow->token_count++;
+
+                                    follow->tokens = pkcc_realloc(follow->tokens, follow->token_count * sizeof(rule_token_t));
+
+                                    follow->tokens[follow->token_count - 1].type = RT_TERMINAL;
+                                    follow->tokens[follow->token_count - 1].terminal = next_token->terminal;
+                                }
+                            } break;
+
+                            case RT_NONTERMINAL: {
+                                parse_tables_first_node_t * first = &parse_tables->first_nodes[follow->nonterminal];
+
+                                for (size_t l = 0; l < first->element_count; l++) {
+                                    bool skip = false;
+                                    for (size_t m = 0; m < follow->token_count; m++) {
+                                        if (follow->tokens[m].type == RT_TERMINAL && follow->tokens[m].terminal == first->elements[l]) {
+                                            skip = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if (!skip) {
+                                        follow->token_count++;
+
+                                        follow->tokens = pkcc_realloc(follow->tokens, follow->token_count * sizeof(rule_token_t));
+
+                                        follow->tokens[follow->token_count - 1].type = RT_TERMINAL;
+                                        follow->tokens[follow->token_count - 1].terminal = first->elements[l];
+                                    }
+                                }
+                            } break;
+
+                            case RT_END: {
+                                bool skip = false;
+                                for (size_t m = 0; m < follow->token_count; m++) {
+                                    if (follow->tokens[m].type == RT_END) {
+                                        skip = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!skip) {
+                                    follow->token_count++;
+
+                                    follow->tokens = pkcc_realloc(follow->tokens, follow->token_count * sizeof(rule_token_t));
+
+                                    follow->tokens[follow->token_count - 1].type = RT_END;
+                                }
+                            } break;
+                        }
+                    }
+                }
+            }
+        }
+
+        pkcc_free(nts);
+    }
+}
+
 parse_state_t * parse_tables_add_state(parse_tables_t * parse_tables) {
     parse_state_t * new_state = parse_tables->parse_states[parse_tables->state_count++] = pkcc_alloc(sizeof(parse_state_t));
 
@@ -73,13 +186,16 @@ parse_state_t * parse_tables_add_state(parse_tables_t * parse_tables) {
     new_state->production_count = 0;
     new_state->productions = pkcc_alloc(1);
 
+    new_state->follow_node_count = 0;
+    new_state->follow_nodes = pkcc_alloc(1);
+
     return new_state;
 }
 
-void eval_states_recur(parse_tables_t * parse_tables, parse_state_t * state, size_t depth, size_t source) {
-    if (depth == 3) {
-        return; // TODO: remove
-        fatal_error("State evaluation limit reached!");
+void eval_states_recur(parse_tables_t * parse_tables, parse_state_t * state, size_t depth) {
+    if (depth == 10) {
+        return;
+        fatal_error("State evaluation limit reached!\n");
     }
 
     size_t nt_count = 0;
@@ -113,9 +229,6 @@ void eval_states_recur(parse_tables_t * parse_tables, parse_state_t * state, siz
                         parse_state_production_t * prod = pkcc_alloc(sizeof(parse_state_production_t));
 
                         prod->position = 0;
-                        prod->shift = NULL_SHIFT;
-                        prod->reduce = NULL_REDUCE;
-                        prod->lookahead = NULL;
                         prod->rule = reg_res.rules[j];
 
                         state->production_count++;
@@ -155,8 +268,6 @@ void eval_states_recur(parse_tables_t * parse_tables, parse_state_t * state, siz
 
             parse_state_t * new_state = parse_tables_add_state(parse_tables);
 
-            prod->shift = new_state->index;
-
             new_state->production_count = 1;
             new_state->productions = pkcc_realloc(new_state->productions, new_state->production_count * sizeof(parse_state_production_t *));
 
@@ -164,13 +275,9 @@ void eval_states_recur(parse_tables_t * parse_tables, parse_state_t * state, siz
 
             memcpy(new_prod, prod, sizeof(parse_state_production_t));
 
-            new_prod->shift = NULL_SHIFT;
             new_prod->position++;
 
-            eval_states_recur(parse_tables, new_state, depth + 1, state->index);
-        }
-        else {
-            prod->reduce = source;
+            eval_states_recur(parse_tables, new_state, depth + 1);
         }
     }
 }
@@ -210,12 +317,11 @@ void parse_tables_load(parse_tables_t * parse_tables) {
     parse_state_production_t * root_production = root_state->productions[0] = pkcc_alloc(sizeof(parse_state_production_t));
 
     root_production->position = 0;
-    root_production->lookahead = NULL;
     root_production->rule = &root_rule;
-    root_production->shift = NULL_SHIFT;
-    root_production->reduce = NULL_REDUCE;
 
-    eval_states_recur(parse_tables, root_state, 0, NULL_REDUCE);
+    eval_states_recur(parse_tables, root_state, 0);
+
+    follow_table_generate(parse_tables);
 }
 
 void parse_tables_print(parse_tables_t * parse_tables) {
@@ -223,6 +329,30 @@ void parse_tables_print(parse_tables_t * parse_tables) {
 
     for (size_t i = 0; i < parse_tables->state_count; i++) {
         printf("STATE %zu:\n", i);
+
+        for (size_t j = 0; j < parse_tables->parse_states[i]->follow_node_count; j++) {
+            printf("  FOLLOW %s: ", rules_nonterminal_name(parse_tables->parse_states[i]->follow_nodes[j].nonterminal));
+
+            for (size_t k = 0; k < parse_tables->parse_states[i]->follow_nodes[j].token_count; k++) {
+                switch (parse_tables->parse_states[i]->follow_nodes[j].tokens[k].type) {
+                    case RT_TERMINAL: {
+                        printf("%s ", token_number_stringify(parse_tables->parse_states[i]->follow_nodes[j].tokens[k].terminal));
+                    } break;
+
+                    case RT_NONTERMINAL: {
+                        fatal_error("Received nonterminal in follow set\n");
+                    } break;
+
+                    case RT_END: {
+                        printf("$ ");
+                    } break;
+                }
+            }
+
+            printf("\n");
+        }
+
+        printf("\n");
 
         for (size_t j = 0; j < parse_tables->parse_states[i]->production_count; j++) {
             parse_state_production_t * prod = parse_tables->parse_states[i]->productions[j];
@@ -253,10 +383,6 @@ void parse_tables_print(parse_tables_t * parse_tables) {
             if (rule->token_count == prod->position) {
                 printf("∘");
             }
-
-            if (prod->shift != NULL_SHIFT) printf("    SHIFT %zu", prod->shift);
-
-            if (prod->reduce != NULL_SHIFT) printf("    REDUCE %zu", prod->reduce);
 
             printf("\n");
         }

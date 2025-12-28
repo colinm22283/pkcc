@@ -176,6 +176,8 @@ void syntax_tree_parse(syntax_tree_t * syntax_tree) {
 
     size_t result = syntax_tree_parse_recur(&syntax_tree->head, syntax_tree->token_buffer, 0, 0, &deepest_position, &deepest_token_number, &deepest_failing_nonterminal);
 
+
+
     if (result == SYNTAX_TREE_PARSE_FAIL) {
         if (deepest_failing_nonterminal == NT_NULL) fatal_error(
             "Parser error in file %s on line %zu\n    Expected %s\n",
@@ -191,7 +193,7 @@ void syntax_tree_parse(syntax_tree_t * syntax_tree) {
             deepest_failing_nonterminal
         );
     }
-    if (result == SYNTAX_TREE_PARSE_SUCCESS) log_printf("Lexing success\n");
+    if (result == SYNTAX_TREE_PARSE_SUCCESS) log_printf("Parsing success\n");
 }
 
 void syntax_tree_print_recur(token_buffer_t * token_buffer, syntax_tree_node_t * node, size_t indent) {
