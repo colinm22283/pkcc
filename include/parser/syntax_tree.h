@@ -5,6 +5,7 @@
 #include <scanner/token_buffer.h>
 
 #include <parser/rule.h>
+#include <parser/parse_tables.h>
 
 struct syntax_tree_node_list_node_s;
 
@@ -45,7 +46,7 @@ typedef struct {
 void syntax_tree_init(syntax_tree_t * syntax_tree, line_buffer_t * line_buffer, token_buffer_t * token_buffer);
 void syntax_tree_free(syntax_tree_t * syntax_tree);
 
-void syntax_tree_parse(syntax_tree_t * syntax_tree);
+void syntax_tree_parse(syntax_tree_t * syntax_tree, parse_tables_t * parse_tables);
 
 void syntax_tree_print(syntax_tree_t * syntax_tree);
 

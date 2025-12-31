@@ -21,5 +21,7 @@ void parser_free(parser_t * parser) {
 void parser_run(parser_t * parser) {
     parse_tables_load(&parser->parse_tables);
 
-    // syntax_tree_parse(&parser->syntax_tree);
+    if (options.dump_parse_tables) parse_tables_print(&parser->parse_tables);
+
+    syntax_tree_parse(&parser->syntax_tree, &parser->parse_tables);
 }

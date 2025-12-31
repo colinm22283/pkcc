@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stddef.h>
+#include <stdbool.h>
 
 #include <scanner/token_number.h>
 
@@ -26,6 +27,18 @@ typedef struct {
     size_t token_count;
     rule_token_t * tokens;
 } rule_t;
+
+static inline bool rule_token_equal(rule_token_t * a, rule_token_t * b) {
+    if (a->type != b->type) return false;
+
+    switch (a->type) {
+        case RT_NONTERMINAL: return a->nonterminal == b->nonterminal;
+        case RT_TERMINAL: return a->terminal == b->terminal;
+        case RT_END: return true;
+
+        default: return false;
+    }
+}
 
 #define DEFINE_RULE(_nonterminal, _tokens) (rule_t) { .nonterminal = (_nonterminal), .token_count = sizeof(_tokens) / sizeof(rule_token_t), .tokens = (_tokens), }
 

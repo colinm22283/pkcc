@@ -169,31 +169,127 @@ size_t syntax_tree_parse_recur(
     return SYNTAX_TREE_PARSE_FAIL;
 }
 
-void syntax_tree_parse(syntax_tree_t * syntax_tree) {
-    size_t deepest_position = 0;
-    token_number_t deepest_token_number;
-    nonterminal_t deepest_failing_nonterminal = NT_NULL;
+void syntax_tree_parse(syntax_tree_t * syntax_tree, parse_tables_t * parse_tables) {
+    size_t stack_head = 0, stack_capacity = 1024; // TODO: macro for size
+    size_t * stack = pkcc_alloc(stack_capacity * sizeof(size_t));
 
-    size_t result = syntax_tree_parse_recur(&syntax_tree->head, syntax_tree->token_buffer, 0, 0, &deepest_position, &deepest_token_number, &deepest_failing_nonterminal);
+    size_t current_state = 0;
 
+    size_t current_pos = 0;
+    token_buffer_t * tok_buf = syntax_tree->token_buffer;
 
+    for (size_t x = 0; x < 600; x++) {
+        log_printf("STACK: ");
+        for (size_t i = 0; i < stack_head; i++) {
+            log_printf("%zu ", stack[i]);
+        }
+        log_printf("[%zu]\n", current_state);
 
-    if (result == SYNTAX_TREE_PARSE_FAIL) {
-        if (deepest_failing_nonterminal == NT_NULL) fatal_error(
-            "Parser error in file %s on line %zu\n    Expected %s\n",
-            syntax_tree->token_buffer->tokens[deepest_position - 1].file_name->absolute_path,
-            syntax_tree->line_buffer->lines[syntax_tree->token_buffer->tokens[deepest_position - 1].line_index].metadata.source_line + 1,
-            token_number_stringify(deepest_token_number)
-        );
-        else fatal_error(
-            "Parser error in file %s on line %zu\n    Expected %s (%zu)\n",
-            syntax_tree->token_buffer->tokens[deepest_position - 1].file_name->absolute_path, // TODO: BUG file_name is null on first token
-            syntax_tree->line_buffer->lines[syntax_tree->token_buffer->tokens[deepest_position - 1].line_index].metadata.source_line + 1,
-            rules_nonterminal_report_name(deepest_failing_nonterminal),
-            deepest_failing_nonterminal
-        );
+        parse_state_t * state = parse_tables->parse_states[current_state];
+        token_t * current_token = &tok_buf->tokens[current_pos];
+        token_t * next_token = &tok_buf->tokens[current_pos + 1];
+        token_number_t token_num = token_number(current_token);
+        token_number_t next_num = token_number(next_token);
+
+        char token_str[TOKEN_STRINGIFY_BUFFER_REQUIREMENT];
+        char next_str[TOKEN_STRINGIFY_BUFFER_REQUIREMENT];
+        token_stringify(token_str, current_token);
+        token_stringify(next_str, next_token);
+
+        printf("%s, %s\n", token_str, next_str);
+
+        parse_state_action_t * taken_action = NULL;
+
+        for (size_t i = 0; i < state->action_count; i++) {
+            parse_state_action_t * act = &state->actions[i];
+
+            switch (act->type) {
+                case AT_REDUCE: {
+                    if (taken_action == NULL) {
+                        if (
+                            parse_action_lookahead_contains(act, next_num)
+                        ) {
+                            taken_action = act;
+                        }
+                    }
+                } break;
+
+                case AT_SHIFT: {
+                    if (act->shift.token->type == RT_TERMINAL) {
+                        if (
+                            token_num == act->shift.token->terminal &&
+                            parse_action_lookahead_contains(act, next_num)
+                        ) {
+                            taken_action = act;
+                        }
+                    }
+                } break;
+            }
+        }
+
+        if (taken_action == NULL) {
+            fatal_error("Cant parse\n");
+        }
+
+        switch (taken_action->type) {
+            case AT_REDUCE: {
+                stack_head -= taken_action->reduce.pop_count;
+
+                parse_state_t * reduced_state = parse_tables->parse_states[stack[stack_head]];
+
+                size_t next_state = SIZE_MAX;
+
+                for (size_t i = 0; i < reduced_state->action_count; i++) {
+                    parse_state_action_t * a = &reduced_state->actions[i];
+
+                    if (
+                        a->type == AT_SHIFT &&
+                        a->shift.token->type == RT_NONTERMINAL &&
+                        a->shift.token->nonterminal == taken_action->reduce.nonterminal
+                    ) {
+                        next_state = a->shift.next_state;
+                    }
+                }
+
+                if (next_state == SIZE_MAX) {
+                    fatal_error("Could not find shift to resolve %s reduce action.\n", rules_nonterminal_name(taken_action->reduce.nonterminal));
+                }
+
+                log_printf(
+                    "Reducing as '%s', popping %zu element(s) off the stack and advancing to state %zu\n",
+                    rules_nonterminal_name(taken_action->reduce.nonterminal),
+                    taken_action->reduce.pop_count,
+                    next_state
+                );
+
+                current_state = next_state;
+                stack_head++;
+            } break;
+
+            case AT_SHIFT: {
+                log_printf(
+                    "Shifted in '%s', advancing to state %zu\n", 
+                    token_number_stringify(token_num),
+                    taken_action->shift.next_state
+                );
+
+                stack[stack_head++] = current_state;
+
+                if (stack_head == stack_capacity) {
+                    log_printf("Stack capacity of %zu hit, doubling size.\n", stack_capacity);
+
+                    stack_capacity *= 2;
+
+                    stack = pkcc_realloc(stack, stack_capacity * sizeof(rule_token_t));
+                }
+
+                current_state = taken_action->shift.next_state;
+                current_pos++;
+            } break;
+        }
     }
-    if (result == SYNTAX_TREE_PARSE_SUCCESS) log_printf("Parsing success\n");
+
+    pkcc_free(stack);
 }
 
 void syntax_tree_print_recur(token_buffer_t * token_buffer, syntax_tree_node_t * node, size_t indent) {

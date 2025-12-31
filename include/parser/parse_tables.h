@@ -6,8 +6,7 @@
 
 #include <parser/rule.h>
 
-#define NULL_SHIFT (SIZE_MAX)
-#define NULL_REDUCE (SIZE_MAX)
+#define NULL_STATE (SIZE_MAX)
 
 typedef struct {
 	size_t element_count;
@@ -24,8 +23,39 @@ typedef struct {
 typedef struct {
 	size_t position;
 
+    size_t next;
+
+    size_t lookahead_count;
+    rule_token_t * lookaheads;
+
 	rule_t * rule;
 } parse_state_production_t;
+
+typedef enum {
+    AT_REDUCE,
+    AT_SHIFT,
+} parse_state_action_type_t;
+
+typedef struct {
+    parse_state_action_type_t type;
+
+    size_t lookahead_count;
+    rule_token_t * lookaheads;
+
+    union {
+        struct {
+            nonterminal_t nonterminal;
+
+            size_t pop_count;
+        } reduce;
+
+        struct {
+            rule_token_t * token;
+
+            size_t next_state;
+        } shift;
+    };
+} parse_state_action_t;
 
 typedef struct parse_state_s {
 	size_t index;
@@ -35,6 +65,9 @@ typedef struct parse_state_s {
 
 	size_t follow_node_count;
 	parse_tables_follow_node_t * follow_nodes;
+
+	size_t action_count;
+	parse_state_action_t * actions;
 } parse_state_t;
 
 typedef struct {
@@ -46,10 +79,22 @@ typedef struct {
 	parse_state_t ** parse_states;
 } parse_tables_t;
 
+static inline bool parse_action_lookahead_contains(parse_state_action_t * action, token_number_t lookahead) {
+    if (action->lookahead_count == 0) return true;
+
+    for (size_t i = 0; i < action->lookahead_count; i++) {
+        if (action->lookaheads[i].type == RT_TERMINAL && action->lookaheads[i].terminal == lookahead) return true;
+    }
+
+    return false;
+}
+
 void parse_tables_init(parse_tables_t * parse_tables);
 void parse_tables_free(parse_tables_t * parse_tables);
 
 void parse_tables_load(parse_tables_t * parse_tables);
 
 void parse_tables_print(parse_tables_t * parse_tables);
+
+parse_tables_follow_node_t * parse_table_follow_lookup(parse_state_t * state, nonterminal_t nt);
 
