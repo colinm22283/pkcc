@@ -446,7 +446,8 @@ void actions_generate(parse_tables_t * parse_tables) {
 
                 action->type = AT_REDUCE;
                 action->lookahead_count = prod->lookahead_count;
-                action->lookaheads = prod->lookaheads;
+                action->lookaheads = pkcc_alloc(prod->lookahead_count * sizeof(rule_token_t));
+                memcpy(action->lookaheads, prod->lookaheads, prod->lookahead_count * sizeof(rule_token_t));
 
                 action->reduce.nonterminal = prod->rule->nonterminal;
                 action->reduce.pop_count = prod->rule->token_count;
@@ -459,8 +460,16 @@ void actions_generate(parse_tables_t * parse_tables) {
                 parse_state_action_t * action = &state->actions[state->action_count - 1];
 
                 action->type = AT_SHIFT;
-                action->lookahead_count = prod->lookahead_count;
-                action->lookaheads = prod->lookaheads;
+
+                if (prod->position == prod->rule->token_count - 1) {
+                    action->lookahead_count = prod->lookahead_count;
+                    action->lookaheads = pkcc_alloc(prod->lookahead_count * sizeof(rule_token_t));
+                    memcpy(action->lookaheads, prod->lookaheads, prod->lookahead_count * sizeof(rule_token_t));
+                }
+                else {
+                    action->lookahead_count = 0;
+                    action->lookaheads = NULL;
+                }
 
                 action->shift.token = &prod->rule->tokens[prod->position];
                 action->shift.next_state = prod->next;
