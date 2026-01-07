@@ -10,7 +10,7 @@
 
 typedef struct {
 	size_t element_count;
-	token_number_t * elements;
+	rule_token_t * elements;
 } parse_tables_first_node_t;
 
 typedef struct {
@@ -25,8 +25,7 @@ typedef struct {
 
     size_t next;
 
-    size_t lookahead_count;
-    rule_token_t * lookaheads;
+    rule_token_t * lookahead;
 
 	rule_t * rule;
 } parse_state_production_t;
