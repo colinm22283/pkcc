@@ -43,7 +43,7 @@ DEFINE_RULE_TOKENS(tokens_mult_1,
 
 DEFINE_RULE_TOKENS(tokens_num_0,
     DEFINE_TERMINAL_RULE_TOKEN(token_number_identifier())
-    );
+);
 DEFINE_RULE_TOKENS(tokens_num_1,
     DEFINE_TERMINAL_RULE_TOKEN(token_number_constant())
 );
