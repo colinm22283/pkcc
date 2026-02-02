@@ -186,15 +186,32 @@ void syntax_tree_parse(syntax_tree_t * syntax_tree, parse_tables_t * parse_table
         log_printf("[%zu]\n", current_state);
 
         parse_state_t * state = parse_tables->parse_states[current_state];
-        token_t * current_token = &tok_buf->tokens[current_pos];
-        token_t * next_token = &tok_buf->tokens[current_pos + 1];
-        token_number_t token_num = token_number(current_token);
-        token_number_t next_num = token_number(next_token);
+
+        token_t * current_token;
+        if (current_pos < tok_buf->token_count) current_token = &tok_buf->tokens[current_pos];
+        else current_token = NULL;
+
+        token_t * next_token;
+        if (current_pos + 1 < tok_buf->token_count) next_token = &tok_buf->tokens[current_pos + 1];
+        else next_token = NULL;
+
+        token_number_t token_num;
+        if (current_token != NULL) token_num = token_number(current_token);
+        else token_num = SIZE_MAX;
+
+        token_number_t next_num;
+        if (next_token != NULL) next_num = token_number(next_token);
+        else next_num = SIZE_MAX;
+
+        if (current_token == NULL) token_num = token_number_end();
+        if (next_token == NULL) next_num = token_number_end();
 
         char token_str[TOKEN_STRINGIFY_BUFFER_REQUIREMENT];
         char next_str[TOKEN_STRINGIFY_BUFFER_REQUIREMENT];
-        token_stringify(token_str, current_token);
-        token_stringify(next_str, next_token);
+
+        if (current_token != NULL) token_stringify(token_str, current_token);
+
+        if (next_token != NULL) token_stringify(next_str, next_token);
 
         printf("%s, %s\n", token_str, next_str);
 
@@ -207,7 +224,7 @@ void syntax_tree_parse(syntax_tree_t * syntax_tree, parse_tables_t * parse_table
                 case AT_REDUCE: {
                     if (taken_action == NULL) {
                         if (
-                            parse_action_lookahead_contains(act, next_num)
+                            parse_action_lookahead_contains(act, token_num)
                         ) {
                             taken_action = act;
                         }
@@ -247,12 +264,22 @@ void syntax_tree_parse(syntax_tree_t * syntax_tree, parse_tables_t * parse_table
                         a->shift.token->type == RT_NONTERMINAL &&
                         a->shift.token->nonterminal == taken_action->reduce.nonterminal
                     ) {
-                        next_state = a->shift.next_state;
+                        printf("Test: %zu\n", a->lookahead_count);
+                        if (a->lookahead_count == 0) {
+                            next_state = a->shift.next_state;
+                        }
+                        else {
+                            for (size_t j = 0; j < a->lookahead_count; j++) {
+                                if (a->lookaheads[j]->type == RT_TERMINAL && token_num == a->lookaheads[j]->terminal) {
+                                    next_state = a->shift.next_state;
+                                }
+                            }
+                        }
                     }
                 }
 
                 if (next_state == SIZE_MAX) {
-                    fatal_error("Could not find shift to resolve %s reduce action.\n", rules_nonterminal_name(taken_action->reduce.nonterminal));
+                    fatal_error("Could not find shift to resolve %s reduce action in state %zu.\n", rules_nonterminal_name(taken_action->reduce.nonterminal), stack[stack_head]);
                 }
 
                 log_printf(

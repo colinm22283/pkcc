@@ -39,7 +39,7 @@ typedef struct {
     parse_state_action_type_t type;
 
     size_t lookahead_count;
-    rule_token_t * lookaheads;
+    rule_token_t ** lookaheads;
 
     union {
         struct {
@@ -82,7 +82,13 @@ static inline bool parse_action_lookahead_contains(parse_state_action_t * action
     if (action->lookahead_count == 0) return true;
 
     for (size_t i = 0; i < action->lookahead_count; i++) {
-        if (action->lookaheads[i].type == RT_TERMINAL && action->lookaheads[i].terminal == lookahead) return true;
+        if (action->lookaheads[i]->type == RT_TERMINAL && action->lookaheads[i]->terminal == lookahead) {
+	        return true;
+        }
+        
+        if (action->lookaheads[i]->type == RT_END && lookahead == token_number_end()) {
+            return true;
+        }
     }
 
     return false;

@@ -177,6 +177,10 @@ void token_stringify(char * buffer, token_t * token) {
             );
         } break;
 
+        case TOKEN_TYPE_END: {
+            strcpy(buffer, "END");
+        } break;
+
         default: strcpy(buffer, "ERROR"); break;
     }
 }

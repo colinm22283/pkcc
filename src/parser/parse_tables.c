@@ -6,7 +6,7 @@
 #include <alloc.h>
 
 rule_token_t root_tokens[] = {
-    { .type = RT_NONTERMINAL, .nonterminal = NT_TRANSLATION_UNIT, }
+    { .type = RT_NONTERMINAL, .nonterminal = NT_TRANSLATION_UNIT, },
 };
 rule_t root_rule = { .nonterminal = NT_START, .token_count = 1, .tokens = root_tokens, };
 rule_token_t end_token = { .type = RT_END, };
@@ -55,11 +55,49 @@ void first_table_recur(parse_tables_first_node_t * first_table, nonterminal_t no
                 }
             } break;
 
+            case RT_END: {
+                bool found = false;
+                for (size_t j = 0; j < first_table[nonterminal].element_count; j++) {
+                    if (first_table[nonterminal].elements[j].type == RT_END) {
+                        found = true;
+
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    first_table[nonterminal].element_count++;
+                    first_table[nonterminal].elements = pkcc_realloc(first_table[nonterminal].elements, first_table[nonterminal].element_count * sizeof(rule_token_t));
+
+                    first_table[nonterminal].elements[first_table[nonterminal].element_count - 1] = rule->tokens[0];
+                }
+            } break;
+
             default: break;
         }
     }
 
     rule_registry_result_free(&rule_result);
+}
+
+void first_table_follow_update(parse_state_production_t * prod, parse_tables_first_node_t * first) {
+    if (prod->rule->token_count == 0) {
+        bool found = false;
+        for (size_t j = 0; j < first->element_count; j++) {
+            if (rule_token_equal(&first->elements[j], prod->lookahead)) {
+                found = true;
+
+                break;
+            }
+        }
+
+        if (!found) {
+            first->element_count++;
+            first->elements = pkcc_realloc(first->elements, first->element_count * sizeof(rule_token_t));
+
+            first->elements[first->element_count - 1] = *prod->lookahead;
+        }
+    }
 }
 
 void follow_table_recur(parse_tables_t * parse_tables, parse_state_t * state, parse_state_production_t * prod) {
@@ -127,9 +165,7 @@ void follow_table_generate(parse_tables_t * parse_tables, parse_state_t * state)
     for (size_t i = 0; i < state->production_count; i++) {
         parse_state_production_t * prod = state->productions[i];
 
-        if (prod->position == prod->rule->token_count) {
-        }
-        else if (prod->position + 1 == prod->rule->token_count) {
+        if (prod->position + 1 == prod->rule->token_count) {
             rule_token_t * token = &prod->rule->tokens[prod->position];
 
             if (token->type == RT_NONTERMINAL) {
@@ -147,9 +183,10 @@ void follow_table_generate(parse_tables_t * parse_tables, parse_state_t * state)
                 }
             }
         }
-        else {
+
+        if (prod->position < prod->rule->token_count - 1) {
             rule_token_t * token = &prod->rule->tokens[prod->position];
-            rule_token_t * next_token = &prod->rule->tokens[prod->position];
+            rule_token_t * next_token = &prod->rule->tokens[prod->position + 1];
 
             if (token->type == RT_NONTERMINAL) {
                 parse_tables_follow_node_t * dst = parse_table_follow_lookup(state, token->nonterminal);
@@ -195,7 +232,7 @@ parse_state_t * parse_tables_add_state(parse_tables_t * parse_tables) {
     return new_state;
 }
 
-void close_state(parse_tables_t * parse_tables, parse_state_t * state) {
+void close_state(parse_state_t * state) {
     for (size_t i = 0; i < state->production_count; i++) {
         parse_state_production_t * prod = state->productions[i];
 
@@ -232,21 +269,31 @@ void expand_state(parse_tables_t * parse_tables, parse_state_t * state) {
         if (state->productions[i]->position == state->productions[i]->rule->token_count) {
             parse_tables_follow_node_t * follow = parse_table_follow_lookup(state, state->productions[i]->rule->nonterminal);
 
-            token_count = follow->token_count;
-            tokens = follow->tokens;
+            if (follow != NULL) {
+                token_count = follow->token_count;
+                tokens = follow->tokens;
+            }
         }
         else if (state->productions[i]->position + 1 == state->productions[i]->rule->token_count) {
             parse_tables_follow_node_t * follow = parse_table_follow_lookup(state, state->productions[i]->rule->nonterminal);
 
-            token_count = follow->token_count;
-            tokens = follow->tokens;
+            if (follow != NULL) {
+                token_count = follow->token_count;
+                tokens = follow->tokens;
+            }
         }
         else {
             if (state->productions[i]->rule->tokens[state->productions[i]->position].type == RT_NONTERMINAL) {
-                parse_tables_follow_node_t * follow = parse_table_follow_lookup(state, state->productions[i]->rule->tokens[state->productions[i]->position].nonterminal);
+                if (state->productions[i]->rule->tokens[state->productions[i]->position + 1].type == RT_TERMINAL) {
+                    token_count = 1;
+                    tokens = &state->productions[i]->rule->tokens[state->productions[i]->position + 1];
+                }
+                else {
+                    parse_tables_first_node_t * first = &parse_tables->first_nodes[state->productions[i]->rule->tokens[state->productions[i]->position + 1].nonterminal];
 
-                token_count = follow->token_count;
-                tokens = follow->tokens;
+                    token_count = first->element_count;
+                    tokens = first->elements;
+                }
             }
             else {
                 if (state->productions[i]->rule->tokens[state->productions[i]->position + 1].type == RT_NONTERMINAL) {
@@ -323,7 +370,7 @@ bool production_equal(parse_state_production_t * a, parse_state_production_t * b
 bool production_equal_adv(parse_state_production_t * target, parse_state_production_t * adv) {
     if (target->rule->nonterminal != adv->rule->nonterminal) return false;
 
-    if (target->position + 1 != adv->position) return false;
+    if (target->position != adv->position + 1) return false;
 
     if (target->rule->token_count != adv->rule->token_count) return false;
 
@@ -337,11 +384,21 @@ bool production_equal_adv(parse_state_production_t * target, parse_state_product
 void eval_states_recur(parse_tables_t * parse_tables, parse_state_t * state, size_t depth) {
     if (depth == 10) return;
 
-    close_state(parse_tables, state);
+    close_state(state);
 
     follow_table_generate(parse_tables, state);
 
     expand_state(parse_tables, state);
+
+    if (options.dump_parse_tables) parse_tables_print(parse_tables);
+
+    for (size_t i = 0; i < state->production_count; i++) {
+        parse_state_production_t * prod = state->productions[i];
+
+        first_table_follow_update(prod, &parse_tables->first_nodes[prod->rule->nonterminal]);
+    }
+
+    follow_table_generate(parse_tables, state);
 
     size_t token_count = 0;
     rule_token_t ** tokens = pkcc_alloc(1);
@@ -368,18 +425,7 @@ void eval_states_recur(parse_tables_t * parse_tables, parse_state_t * state, siz
     }
 
     for (size_t i = 0; i < token_count; i++) {
-        rule_token_t * token = tokens[i];
-
-        size_t prod_count = 0;
-        parse_state_production_t ** prods = pkcc_alloc(1);
-
-        for (size_t j = 0; j < state->production_count; j++) {
-            parse_state_production_t * prod = state->productions[j];
-
-            if (prod->position < prod->rule->token_count) {
-                if (prod->rule->tokens[prod->position] == )
-            }
-        }
+        // rule_token_t * token = tokens[i];
 
         for (size_t j = 0; j < state->production_count; j++) {
             parse_state_production_t * prod = state->productions[j];
@@ -389,6 +435,8 @@ void eval_states_recur(parse_tables_t * parse_tables, parse_state_t * state, siz
 
                 for (size_t k = 0; k < parse_tables->state_count; k++) {
                     parse_state_t * test_state = parse_tables->parse_states[k];
+
+                    target_state = NULL;
 
                     for (size_t l = 0; l < test_state->production_count; l++) {
                         if (production_equal_adv(test_state->productions[l], prod)) {
@@ -430,52 +478,121 @@ void eval_states_recur(parse_tables_t * parse_tables, parse_state_t * state, siz
     pkcc_free(tokens);
 }
 
+static inline parse_state_action_t * action_get_reduce(parse_state_t * state, nonterminal_t nt) {
+    for (size_t i = 0; i < state->action_count; i++) {
+        parse_state_action_t * action = &state->actions[i];
+
+        if (action->type == AT_REDUCE) {
+            if (action->reduce.nonterminal == nt) {
+                return action;
+            }
+        }
+    }
+
+    return NULL;
+}
+
+static inline parse_state_action_t * action_get_shift(parse_state_t * state, rule_token_t * tok, size_t next_state) {
+    for (size_t i = 0; i < state->action_count; i++) {
+        parse_state_action_t * action = &state->actions[i];
+
+        if (action->type == AT_SHIFT) {
+            if (rule_token_equal(action->shift.token, tok) && action->shift.next_state == next_state) {
+                return action;
+            }
+        }
+    }
+
+    return NULL;
+}
+
 void actions_generate(parse_tables_t * parse_tables) {
-    // for (size_t i = 0; i < parse_tables->state_count; i++) {
-    //     parse_state_t * state = parse_tables->parse_states[i];
-    //
-    //     for (size_t j = 0; j < state->production_count; j++) {
-    //         parse_state_production_t * prod = state->productions[j];
-    //
-    //         if (prod->position == prod->rule->token_count) {
-    //             state->action_count++;
-    //
-    //             state->actions = pkcc_realloc(state->actions, state->action_count * sizeof(parse_state_action_t));
-    //
-    //             parse_state_action_t * action = &state->actions[state->action_count - 1];
-    //
-    //             action->type = AT_REDUCE;
-    //             action->lookahead_count = prod->lookahead_count;
-    //             action->lookaheads = pkcc_alloc(prod->lookahead_count * sizeof(rule_token_t));
-    //             memcpy(action->lookaheads, prod->lookaheads, prod->lookahead_count * sizeof(rule_token_t));
-    //
-    //             action->reduce.nonterminal = prod->rule->nonterminal;
-    //             action->reduce.pop_count = prod->rule->token_count;
-    //         }
-    //         else {
-    //             state->action_count++;
-    //
-    //             state->actions = pkcc_realloc(state->actions, state->action_count * sizeof(parse_state_action_t));
-    //
-    //             parse_state_action_t * action = &state->actions[state->action_count - 1];
-    //
-    //             action->type = AT_SHIFT;
-    //
-    //             if (prod->position == prod->rule->token_count - 1) {
-    //                 action->lookahead_count = prod->lookahead_count;
-    //                 action->lookaheads = pkcc_alloc(prod->lookahead_count * sizeof(rule_token_t));
-    //                 memcpy(action->lookaheads, prod->lookaheads, prod->lookahead_count * sizeof(rule_token_t));
-    //             }
-    //             else {
-    //                 action->lookahead_count = 0;
-    //                 action->lookaheads = NULL;
-    //             }
-    //
-    //             action->shift.token = &prod->rule->tokens[prod->position];
-    //             action->shift.next_state = prod->next;
-    //         }
-    //     }
-    // }
+    for (size_t i = 0; i < parse_tables->state_count; i++) {
+        parse_state_t * state = parse_tables->parse_states[i];
+
+        for (size_t j = 0; j < state->production_count; j++) {
+            parse_state_production_t * prod = state->productions[j];
+
+            if (prod->position == prod->rule->token_count) {
+                parse_state_action_t * action = action_get_reduce(state, prod->rule->nonterminal);
+
+                if (action == NULL) {
+                    state->action_count++;
+
+                    state->actions = pkcc_realloc(state->actions, state->action_count * sizeof(parse_state_action_t));
+
+                    action = &state->actions[state->action_count - 1];
+
+                    action->type = AT_REDUCE;
+
+                    if (prod->lookahead == NULL) {
+                        action->lookahead_count = 0;
+                    }
+                    else {
+                        action->lookahead_count = 1;
+                        action->lookaheads = pkcc_alloc(action->lookahead_count * sizeof(rule_token_t *));
+
+                        action->lookaheads[0] = prod->lookahead;
+                    }
+
+                    action->reduce.nonterminal = prod->rule->nonterminal;
+                    action->reduce.pop_count = prod->rule->token_count;
+                }
+                else {
+                    if (action->lookahead_count != 0) {
+                        action->lookahead_count++;
+                        action->lookaheads = pkcc_realloc(action->lookaheads, action->lookahead_count * sizeof(rule_token_t *));
+
+                        action->lookaheads[action->lookahead_count - 1] = prod->lookahead;
+                    }
+                }
+            }
+            else {
+                parse_state_action_t * action = action_get_shift(state, &prod->rule->tokens[prod->position], prod->next);
+
+                if (action == NULL) {
+                    state->action_count++;
+
+                    state->actions = pkcc_realloc(state->actions, state->action_count * sizeof(parse_state_action_t));
+
+                    action = &state->actions[state->action_count - 1];
+
+                    action->type = AT_SHIFT;
+
+                    if (prod->lookahead == NULL) {
+                        printf("TEST\n");
+                        action->lookahead_count = 0;
+                    }
+                    else {
+                        action->lookahead_count = 1;
+                        action->lookaheads = pkcc_alloc(action->lookahead_count * sizeof(rule_token_t));
+                        action->lookaheads[0] = prod->lookahead;
+                    }
+
+                    action->shift.token = &prod->rule->tokens[prod->position];
+                    action->shift.next_state = prod->next;
+                }
+                else {
+                    if (action->lookahead_count != 0) {
+                        bool found = false;
+                        for (size_t j = 0; j < action->lookahead_count; j++) {
+                            if (rule_token_equal(action->lookaheads[j], prod->lookahead)) {
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        if (!found) {
+                            action->lookahead_count++;
+                            action->lookaheads = pkcc_realloc(action->lookaheads, action->lookahead_count * sizeof(rule_token_t *));
+
+                            action->lookaheads[action->lookahead_count - 1] = prod->lookahead;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 void parse_tables_init(parse_tables_t * parse_tables) {
@@ -588,18 +705,27 @@ void parse_tables_print(parse_tables_t * parse_tables) {
 
             printf("    { ");
 
-            switch (prod->lookahead->type) {
-                case RT_TERMINAL: {
-                    printf("%s ", token_number_stringify(prod->lookahead->terminal));
-                } break;
+            if (prod->lookahead != NULL) {
+                switch (prod->lookahead->type) {
+                    case RT_TERMINAL: {
+                        printf("'%s' ", token_number_stringify(prod->lookahead->terminal));
+                    } break;
 
-                case RT_NONTERMINAL: {
-                    printf("%s ", rules_nonterminal_name(prod->lookahead->nonterminal));
-                } break;
+                    case RT_NONTERMINAL: {
+                        printf("'%s' ", rules_nonterminal_name(prod->lookahead->nonterminal));
+                    } break;
 
-                case RT_END: {
-                    printf("END ");
-                } break;
+                    case RT_END: {
+                        printf("END ");
+                    } break;
+
+                    default: {
+                        printf("invalid ");
+                    } break;
+                }
+            }
+            else {
+                printf("ALL ");
             }
 
             printf("}\n");
@@ -614,7 +740,10 @@ void parse_tables_print(parse_tables_t * parse_tables) {
         printf("%30s | ", rules_nonterminal_name(i));
 
         for (size_t j = 0; j < parse_tables->first_nodes[i].element_count; j++) {
-            printf("'%s' ", token_number_stringify(parse_tables->first_nodes[i].elements[j].terminal));
+            if (parse_tables->first_nodes[i].elements[j].type == RT_END) {
+                printf("'$' ");
+            }
+            else printf("'%s' ", token_number_stringify(parse_tables->first_nodes[i].elements[j].terminal));
         }
 
         printf("\n");
@@ -658,18 +787,24 @@ void parse_tables_print(parse_tables_t * parse_tables) {
 
             printf("        ");
 
+            printf("(%zu) ", action->lookahead_count);
+
             for (size_t k = 0; k < action->lookahead_count; k++) {
-                switch (action->lookaheads[k].type) {
+                switch (action->lookaheads[k]->type) {
                     case RT_TERMINAL: {
-                        printf("%s", token_number_stringify(action->lookaheads[k].terminal));
+                        printf("'%s'", token_number_stringify(action->lookaheads[k]->terminal));
                     } break;
 
                     case RT_NONTERMINAL: {
-                        printf("%s", rules_nonterminal_name(action->lookaheads[k].nonterminal));
+                        printf("'%s'", rules_nonterminal_name(action->lookaheads[k]->nonterminal));
                     } break;
 
                     case RT_END: {
-                        printf("$");
+                        printf("'$'");
+                    } break;
+
+                    default: {
+                        printf("'invalid'");
                     } break;
                 }
 

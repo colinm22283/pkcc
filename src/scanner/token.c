@@ -9,6 +9,7 @@ void token_init(token_t * token, token_type_t type) {
         [TOKEN_TYPE_CONSTANT] = sizeof(token_data_constant_t),
         [TOKEN_TYPE_PUNCTUATION] = sizeof(token_data_punctuation_t),
         [TOKEN_TYPE_STRING_LITERAL] = sizeof(token_data_string_literal_t),
+        [TOKEN_TYPE_END] = 1,
     };
 
     token->type = type;

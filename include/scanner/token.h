@@ -148,6 +148,8 @@ typedef enum {
     TOKEN_TYPE_CONSTANT,
     TOKEN_TYPE_PUNCTUATION,
     TOKEN_TYPE_STRING_LITERAL,
+
+    TOKEN_TYPE_END,
 } token_type_t;
 
 typedef struct {

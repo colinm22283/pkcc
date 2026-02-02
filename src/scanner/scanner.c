@@ -282,6 +282,8 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
             );
         }
     }
+
+    token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_END);
 }
 
 void scanner_print_tokens(scanner_t * scanner, line_buffer_t * line_buffer) {
