@@ -24,4 +24,6 @@ void parser_run(parser_t * parser) {
     if (options.dump_parse_tables) parse_tables_print(&parser->parse_tables);
 
     syntax_tree_parse(&parser->syntax_tree, &parser->parse_tables);
+
+    log_printf("Input accepted!\n");
 }

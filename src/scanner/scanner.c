@@ -284,6 +284,12 @@ void scanner_scan(scanner_t * scanner, line_buffer_t * line_buffer) {
     }
 
     token_t * token = token_buffer_push(&scanner->tb, TOKEN_TYPE_END);
+
+    line_buffer_line_t * last_line = &line_buffer->lines[line_buffer->size - 1];
+
+    token->file_name = last_line->metadata.file_name;
+    token->line_index = line_buffer->size - 1;
+    token->position = strlen(last_line->line) - 1;
 }
 
 void scanner_print_tokens(scanner_t * scanner, line_buffer_t * line_buffer) {

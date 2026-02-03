@@ -241,16 +241,28 @@ void close_state(parse_state_t * state) {
                 rule_registry_result_t rule_res = rule_registry_lookup(prod->rule->tokens[prod->position].nonterminal);
 
                 for (size_t j = 0; j < rule_res.rule_count; j++) {
-                    state->production_count++;
-                    state->productions = pkcc_realloc(state->productions, state->production_count * sizeof(parse_state_production_t *));
+                    bool found = false;
+                    for (size_t k = 0; k < state->production_count; k++) {
+                        if (
+                            state->productions[k]->rule == rule_res.rules[j] &&
+                            state->productions[k]->position == 0
+                        ) {
+                            found = true;
+                        }
+                    }
 
-                    parse_state_production_t * new_prod = state->productions[state->production_count - 1] = pkcc_alloc(sizeof(parse_state_production_t));
+                    if (!found) {
+                        state->production_count++;
+                        state->productions = pkcc_realloc(state->productions, state->production_count * sizeof(parse_state_production_t *));
 
-                    new_prod->lookahead = NULL;
+                        parse_state_production_t * new_prod = state->productions[state->production_count - 1] = pkcc_alloc(sizeof(parse_state_production_t));
 
-                    new_prod->next = NULL_STATE;
-                    new_prod->position = 0;
-                    new_prod->rule = rule_res.rules[j];
+                        new_prod->lookahead = NULL;
+
+                        new_prod->next = NULL_STATE;
+                        new_prod->position = 0;
+                        new_prod->rule = rule_res.rules[j];
+                    }
                 }
 
                 rule_registry_result_free(&rule_res);
@@ -382,7 +394,7 @@ bool production_equal_adv(parse_state_production_t * target, parse_state_product
 }
 
 void eval_states_recur(parse_tables_t * parse_tables, parse_state_t * state, size_t depth) {
-    if (depth == 10) return;
+    if (depth == 10000) return;
 
     close_state(state);
 
@@ -390,7 +402,7 @@ void eval_states_recur(parse_tables_t * parse_tables, parse_state_t * state, siz
 
     expand_state(parse_tables, state);
 
-    if (options.dump_parse_tables) parse_tables_print(parse_tables);
+    // parse_tables_print(parse_tables);
 
     for (size_t i = 0; i < state->production_count; i++) {
         parse_state_production_t * prod = state->productions[i];
@@ -425,6 +437,10 @@ void eval_states_recur(parse_tables_t * parse_tables, parse_state_t * state, siz
     }
 
     for (size_t i = 0; i < token_count; i++) {
+        if (depth == 0) {
+            log_printf("%zu/%zu\n", i + 1, token_count);
+        }
+
         // rule_token_t * token = tokens[i];
 
         for (size_t j = 0; j < state->production_count; j++) {
@@ -622,6 +638,8 @@ void parse_tables_load(parse_tables_t * parse_tables) {
         first_table_recur(parse_tables->first_nodes, i);
     }
 
+    log_printf("First table generated\n");
+
     parse_state_t * root_state = parse_tables_add_state(parse_tables);
 
     root_state->production_count = 1;
@@ -634,7 +652,11 @@ void parse_tables_load(parse_tables_t * parse_tables) {
 
     follow_node_append(new_follow_node(root_state, NT_START), &end_token);
 
+    log_printf("Begin eval states\n");
+
     eval_states_recur(parse_tables, root_state, 0);
+
+    log_printf("States evaluated\n");
 
     actions_generate(parse_tables);
 }

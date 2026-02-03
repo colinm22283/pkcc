@@ -40,6 +40,7 @@ static inline bool rule_token_equal(rule_token_t * a, rule_token_t * b) {
     }
 }
 
+#define DEFINE_RULE_EMPTY(_nonterminal) (rule_t) { .nonterminal = (_nonterminal), .token_count = 0, .tokens = NULL, }
 #define DEFINE_RULE(_nonterminal, _tokens) (rule_t) { .nonterminal = (_nonterminal), .token_count = sizeof(_tokens) / sizeof(rule_token_t), .tokens = (_tokens), }
 
 #define DEFINE_RULE_MULTI15(_nonterminal, _tokens, ...) DEFINE_RULE(_nonterminal, _tokens) __VA_OPT__(oh dear)
@@ -65,4 +66,5 @@ static inline bool rule_token_equal(rule_token_t * a, rule_token_t * b) {
 #define DEFINE_TERMINAL_RULE_TOKEN(_terminal) (rule_token_t) { .type = RT_TERMINAL, .terminal = (_terminal) }
 #define DEFINE_END_RULE_TOKEN() (rule_token_t) { .type = RT_END, }
 
+#define DEFINE_RULE_TOKENS(_name, ...) rule_token_t _name[] = { __VA_ARGS__ }
 #define DEFINE_RULE_TOKENS(_name, ...) rule_token_t _name[] = { __VA_ARGS__ }

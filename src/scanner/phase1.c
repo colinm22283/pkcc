@@ -177,6 +177,10 @@ void scanner_print_phase1(FILE * out_stream, scanner_t * scanner) {
 
                 fprintf(out_stream, "305 Text \"%s\"\n", string_literal->content);
             } break;
+
+            case TOKEN_TYPE_END: {
+                fprintf(out_stream, "END\n");
+            } break;
         }
     }
 }

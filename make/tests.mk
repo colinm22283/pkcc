@@ -5,6 +5,10 @@ export PKCC=$(CURDIR)/$(BUILD_DIR)/pkcc
 test-%: $(BUILD_DIR)/pkcc
 	cd $(TESTS_DIR) && $(MAKE) test-$*
 
+.PHONY: debug-%
+debug-%: debug
+	cd $(TESTS_DIR) && $(MAKE) test-$*
+
 .PHONY: gdb-%
 gdb-%: debug
 	cd $(TESTS_DIR) && $(MAKE) gdb-$*

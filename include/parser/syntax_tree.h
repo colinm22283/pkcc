@@ -55,3 +55,4 @@ void syntax_tree_node_free(syntax_tree_node_t * node);
 void syntax_tree_node_clear(syntax_tree_node_t * node);
 
 void syntax_tree_node_list_link_back(syntax_tree_node_t * node, syntax_tree_node_list_node_t * list_node);
+syntax_tree_node_list_node_t * syntax_tree_node_list_unlink_back(syntax_tree_node_t * node);

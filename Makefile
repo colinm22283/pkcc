@@ -13,7 +13,8 @@ INCLUDE_DIRS=include
 all: $(BUILD_DIR)/pkcc
 
 .PHONY: debug
-debug: CFLAGS+=-g
+debug: CFLAGS+=-g -fsanitize=address
+debug: LDFLAGS+=-fsanitize=address
 debug: OPTIMIZATION=0
 debug: all
 

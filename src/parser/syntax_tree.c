@@ -178,7 +178,9 @@ void syntax_tree_parse(syntax_tree_t * syntax_tree, parse_tables_t * parse_table
     size_t current_pos = 0;
     token_buffer_t * tok_buf = syntax_tree->token_buffer;
 
-    for (size_t x = 0; x < 600; x++) {
+    syntax_tree_node_t * current_node = &syntax_tree->head;
+
+    for (size_t x = 0; x < 600; x++) { // TODO: config param
         log_printf("STACK: ");
         for (size_t i = 0; i < stack_head; i++) {
             log_printf("%zu ", stack[i]);
@@ -203,11 +205,8 @@ void syntax_tree_parse(syntax_tree_t * syntax_tree, parse_tables_t * parse_table
         if (next_token != NULL) next_num = token_number(next_token);
         else next_num = SIZE_MAX;
 
-        if (current_token == NULL) token_num = token_number_end();
-        if (next_token == NULL) next_num = token_number_end();
-
-        char token_str[TOKEN_STRINGIFY_BUFFER_REQUIREMENT];
-        char next_str[TOKEN_STRINGIFY_BUFFER_REQUIREMENT];
+        char token_str[TOKEN_STRINGIFY_BUFFER_REQUIREMENT] = "invalid";
+        char next_str[TOKEN_STRINGIFY_BUFFER_REQUIREMENT] = "invalid";
 
         if (current_token != NULL) token_stringify(token_str, current_token);
 
@@ -254,6 +253,10 @@ void syntax_tree_parse(syntax_tree_t * syntax_tree, parse_tables_t * parse_table
 
                 parse_state_t * reduced_state = parse_tables->parse_states[stack[stack_head]];
 
+                if (stack[stack_head] == 0 && taken_action->reduce.nonterminal == NT_START) {
+                    return;
+                }
+
                 size_t next_state = SIZE_MAX;
 
                 for (size_t i = 0; i < reduced_state->action_count; i++) {
@@ -270,7 +273,10 @@ void syntax_tree_parse(syntax_tree_t * syntax_tree, parse_tables_t * parse_table
                         }
                         else {
                             for (size_t j = 0; j < a->lookahead_count; j++) {
-                                if (a->lookaheads[j]->type == RT_TERMINAL && token_num == a->lookaheads[j]->terminal) {
+                                if (
+                                    (a->lookaheads[j]->type == RT_TERMINAL && token_num == a->lookaheads[j]->terminal) ||
+                                    (a->lookaheads[j]->type == RT_END && token_num == token_number_end())
+                                ) {
                                     next_state = a->shift.next_state;
                                 }
                             }
@@ -288,6 +294,26 @@ void syntax_tree_parse(syntax_tree_t * syntax_tree, parse_tables_t * parse_table
                     taken_action->reduce.pop_count,
                     next_state
                 );
+
+                syntax_tree_node_list_node_t * new_node = pkcc_alloc(sizeof(syntax_tree_node_list_node_t));
+                new_node->token_type = RT_NONTERMINAL;
+                new_node->nonterminal.nonterminal = taken_action->reduce.nonterminal;
+                new_node->nonterminal.position = current_pos;
+                syntax_tree_node_init(&new_node->nonterminal.tree);
+
+                syntax_tree_node_list_node_t ** nodes = pkcc_alloc(taken_action->reduce.pop_count * sizeof(syntax_tree_node_list_node_t *));
+
+                for (size_t i = 0; i < taken_action->reduce.pop_count; i++) {
+                    nodes[i] = syntax_tree_node_list_unlink_back(current_node);
+                }
+
+                for (size_t i = 0; i < taken_action->reduce.pop_count; i++) {
+                    syntax_tree_node_list_link_back(&new_node->nonterminal.tree, nodes[taken_action->reduce.pop_count - i - 1]);
+                }
+
+                syntax_tree_node_list_link_back(current_node, new_node);
+
+                pkcc_free(nodes);
 
                 current_state = next_state;
                 stack_head++;
@@ -309,6 +335,13 @@ void syntax_tree_parse(syntax_tree_t * syntax_tree, parse_tables_t * parse_table
 
                     stack = pkcc_realloc(stack, stack_capacity * sizeof(rule_token_t));
                 }
+
+                syntax_tree_node_list_node_t * new_node = pkcc_alloc(sizeof(syntax_tree_node_list_node_t));
+                new_node->token_type = RT_TERMINAL;
+                new_node->terminal.terminal = token_num;
+                new_node->terminal.position = current_pos;
+
+                syntax_tree_node_list_link_back(current_node, new_node);
 
                 current_state = taken_action->shift.next_state;
                 current_pos++;
@@ -420,4 +453,13 @@ void syntax_tree_node_list_link_back(syntax_tree_node_t * node, syntax_tree_node
 
     node->tail->prev->next = list_node;
     node->tail->prev = list_node;
+}
+
+syntax_tree_node_list_node_t * syntax_tree_node_list_unlink_back(syntax_tree_node_t * node) {
+    syntax_tree_node_list_node_t * ret = node->tail->prev;
+
+    ret->prev->next = ret->next;
+    ret->next->prev = ret->prev;
+
+    return ret;
 }
