@@ -394,7 +394,7 @@ bool production_equal_adv(parse_state_production_t * target, parse_state_product
 }
 
 void eval_states_recur(parse_tables_t * parse_tables, parse_state_t * state, size_t depth) {
-    if (depth == 10000) return;
+    if (depth == 1000) fatal_error("Hit maximum eval state limit\n");
 
     close_state(state);
 
@@ -436,60 +436,83 @@ void eval_states_recur(parse_tables_t * parse_tables, parse_state_t * state, siz
         }
     }
 
-    for (size_t i = 0; i < token_count; i++) {
+    size_t recur_count = 0, recur_capacity = 1;
+    parse_state_t ** recur_states = pkcc_alloc(recur_capacity * sizeof(parse_state_t *));
+
+    // for (size_t i = 0; i < token_count; i++) {
+    for (size_t j = 0; j < state->production_count; j++) {
         if (depth == 0) {
-            log_printf("%zu/%zu\n", i + 1, token_count);
+            log_printf("%zu/%zu\n", j + 1, state->production_count);
         }
 
-        // rule_token_t * token = tokens[i];
+        parse_state_production_t * prod = state->productions[j];
 
-        for (size_t j = 0; j < state->production_count; j++) {
-            parse_state_production_t * prod = state->productions[j];
+        if (prod->position < prod->rule->token_count) {
+            parse_state_t * target_state = NULL;
 
-            if (prod->position < prod->rule->token_count) {
-                parse_state_t * target_state = NULL;
+            for (size_t k = 0; k < parse_tables->state_count; k++) {
+                parse_state_t * test_state = parse_tables->parse_states[k];
 
-                for (size_t k = 0; k < parse_tables->state_count; k++) {
-                    parse_state_t * test_state = parse_tables->parse_states[k];
+                target_state = NULL;
 
-                    target_state = NULL;
+                for (size_t l = 0; l < test_state->production_count; l++) {
+                    if (production_equal_adv(test_state->productions[l], prod)) {
+                        target_state = test_state;
 
-                    for (size_t l = 0; l < test_state->production_count; l++) {
-                        if (production_equal_adv(test_state->productions[l], prod)) {
-                            target_state = test_state;
+                        break;
+                    }
+                }
 
-                            break;
+                if (target_state != NULL) {
+                    break;
+                }
+            }
+
+            if (target_state == NULL) {
+                if (prod->rule->tokens[prod->position].type == RT_NONTERMINAL) {
+                    for (size_t k = 0; k < state->production_count; k++) {
+                        if (
+                            rule_token_equal(&prod->rule->tokens[prod->position], &state->productions[k]->rule->tokens[prod->position]) &&
+                            rule_token_equal(prod->lookahead, state->productions[k]->lookahead)
+                        ) {
+                            if (state->productions[k]->next != NULL_STATE) {
+                                target_state = parse_tables->parse_states[state->productions[k]->next];
+
+                                break;
+                            }
                         }
                     }
-
-                    if (target_state != NULL) break;
                 }
 
-                if (target_state == NULL) {
-                    target_state = parse_tables_add_state(parse_tables);
+                if (target_state == NULL) target_state = parse_tables_add_state(parse_tables);
 
-                    target_state->production_count++;
-                    target_state->productions = pkcc_realloc(target_state->productions, target_state->production_count * sizeof(parse_state_production_t *));
+                target_state->production_count++;
+                target_state->productions = pkcc_realloc(target_state->productions, target_state->production_count * sizeof(parse_state_production_t *));
 
-                    parse_state_production_t * new_prod = target_state->productions[target_state->production_count - 1] = pkcc_alloc(sizeof(parse_state_production_t));
+                parse_state_production_t * new_prod = target_state->productions[target_state->production_count - 1] = pkcc_alloc(sizeof(parse_state_production_t));
 
-                    memcpy(new_prod, prod, sizeof(parse_state_production_t));
-                    new_prod->position++;
-                    new_prod->lookahead = NULL;
+                memcpy(new_prod, prod, sizeof(parse_state_production_t));
+                new_prod->position++;
+                new_prod->lookahead = NULL;
 
-                    parse_tables_follow_node_t * new_follow = new_follow_node(target_state, new_prod->rule->nonterminal);
-                    parse_tables_follow_node_t * old_follow = parse_table_follow_lookup(state, new_prod->rule->nonterminal);
-                    for (size_t k = 0; k < old_follow->token_count; k++) {
-                        follow_node_append(new_follow, &old_follow->tokens[k]);
-                    }
-
-                    eval_states_recur(parse_tables, target_state, depth + 1);
+                parse_tables_follow_node_t * new_follow = new_follow_node(target_state, new_prod->rule->nonterminal);
+                parse_tables_follow_node_t * old_follow = parse_table_follow_lookup(state, new_prod->rule->nonterminal);
+                for (size_t k = 0; k < old_follow->token_count; k++) {
+                    follow_node_append(new_follow, &old_follow->tokens[k]);
                 }
 
-                prod->next = target_state->index;
+                recur_states[recur_count++] = target_state;
+
+                if (recur_count == recur_capacity)
+                eval_states_recur(parse_tables, target_state, depth + 1);
             }
+
+            prod->next = target_state->index;
         }
     }
+    // }
+
+    pkcc_free(recur_states);
 
     pkcc_free(tokens);
 }

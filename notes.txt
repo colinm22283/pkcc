@@ -1,0 +1,28 @@
+int main ( void ) * {
+    printf("test\n");
+}
+
+
+
+
+NT_DECLARATION_SPECIFIERS NT_DECLARATOR___________________________________
+NT_TYPE_SPECIFIER         NT_DIRECT_DECLARATOR____________________________
+int                       NT_DIRECT_DECLARATOR ( NT_PARAMETER_TYPE_LIST )
+                          main                   NT_PARAMETER_LIST________
+                                                 NT_PARAMETER_DECLARATION_
+                                                 NT_DECLARATION_SPECIFIERS
+                                                 NT_TYPE_SPECIFIER
+                                                 void
+
+
+
+
+
+
+0 6 7
+
+
+
+
+0 6 251 252 253 254
+
