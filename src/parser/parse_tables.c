@@ -503,14 +503,21 @@ void eval_states_recur(parse_tables_t * parse_tables, parse_state_t * state, siz
 
                 recur_states[recur_count++] = target_state;
 
-                if (recur_count == recur_capacity)
-                eval_states_recur(parse_tables, target_state, depth + 1);
+                if (recur_count == recur_capacity) {
+                    recur_capacity *= 2;
+
+                    recur_states = pkcc_realloc(recur_states, recur_capacity * sizeof(parse_state_t *));
+                }
             }
 
             prod->next = target_state->index;
         }
     }
     // }
+
+    for (size_t i = 0; i < recur_count; i++) {
+        eval_states_recur(parse_tables, recur_states[i], depth + 1);
+    }
 
     pkcc_free(recur_states);
 
