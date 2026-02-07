@@ -1,7 +1,7 @@
 #include <scanner/token.h>
 
 #include <grammar/rules.h>
-#include <grammar/nonterminals.h>
+#include <grammar/simple_nonterminals.h>
 
 DEFINE_RULE_TOKENS(tokens_translation_unit_0,
     DEFINE_NONTERMINAL_RULE_TOKEN(NT_LINE_LIST)

@@ -17,7 +17,7 @@ typedef struct {
 	nonterminal_t nonterminal;
 
 	size_t token_count;
-	rule_token_t * tokens;
+	rule_token_t ** tokens;
 } parse_tables_follow_node_t;
 
 typedef struct {

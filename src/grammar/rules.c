@@ -956,7 +956,7 @@ DEFINE_RULE_TOKENS(tokens_translation_unit_1,
     DEFINE_NONTERMINAL_RULE_TOKEN(NT_EXTERNAL_DECLARATION)
 );
 
-DEFINE_RULE_TOKENS(tokens_external_declaration_0, DEFINE_NONTERMINAL_RULE_TOKEN(NT_FUNCTION_DEFINITION));
+// DEFINE_RULE_TOKENS(tokens_external_declaration_0, DEFINE_NONTERMINAL_RULE_TOKEN(NT_FUNCTION_DEFINITION));
 DEFINE_RULE_TOKENS(tokens_external_declaration_1, DEFINE_NONTERMINAL_RULE_TOKEN(NT_DECLARATION));
 
 DEFINE_RULE_TOKENS(tokens_function_definition_0,
@@ -1405,7 +1405,7 @@ rule_t all_rules[RULE_COUNT] = {
     ),
 
     DEFINE_RULE_MULTI(NT_EXTERNAL_DECLARATION,
-                      tokens_external_declaration_0,
+                      // tokens_external_declaration_0,
                       tokens_external_declaration_1
     ),
 

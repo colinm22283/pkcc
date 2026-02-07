@@ -1,3 +1,1 @@
-int main(int test) {
-    printf("hello world\n");
-}
+int test = 10;

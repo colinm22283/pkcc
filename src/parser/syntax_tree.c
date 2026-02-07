@@ -180,7 +180,7 @@ void syntax_tree_parse(syntax_tree_t * syntax_tree, parse_tables_t * parse_table
 
     syntax_tree_node_t * current_node = &syntax_tree->head;
 
-    for (size_t x = 0; x < 600; x++) { // TODO: config param
+    while (true) {
         log_printf("STACK: ");
         for (size_t i = 0; i < stack_head; i++) {
             log_printf("%zu ", stack[i]);
@@ -231,13 +231,12 @@ void syntax_tree_parse(syntax_tree_t * syntax_tree, parse_tables_t * parse_table
                 } break;
 
                 case AT_SHIFT: {
-                    if (act->shift.token->type == RT_TERMINAL) {
-                        if (
-                            token_num == act->shift.token->terminal &&
-                            parse_action_lookahead_contains(act, next_num)
-                        ) {
-                            taken_action = act;
-                        }
+                    if (
+                        act->shift.token->type == RT_TERMINAL &&
+                        token_num == act->shift.token->terminal &&
+                        parse_action_lookahead_contains(act, next_num)
+                    ) {
+                        taken_action = act;
                     }
                 } break;
             }
@@ -333,7 +332,7 @@ void syntax_tree_parse(syntax_tree_t * syntax_tree, parse_tables_t * parse_table
 
                     stack_capacity *= 2;
 
-                    stack = pkcc_realloc(stack, stack_capacity * sizeof(rule_token_t));
+                    stack = pkcc_realloc(stack, stack_capacity * sizeof(size_t));
                 }
 
                 syntax_tree_node_list_node_t * new_node = pkcc_alloc(sizeof(syntax_tree_node_list_node_t));
@@ -347,6 +346,8 @@ void syntax_tree_parse(syntax_tree_t * syntax_tree, parse_tables_t * parse_table
                 current_pos++;
             } break;
         }
+
+        syntax_tree_print(syntax_tree);
     }
 
     pkcc_free(stack);
