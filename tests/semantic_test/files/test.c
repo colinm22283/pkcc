@@ -1,3 +1,1 @@
-int main() {
-    int a = 10;
-}
+static char a = 10;

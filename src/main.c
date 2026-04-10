@@ -16,7 +16,6 @@
 #include <scanner/phase1.h>
 
 #include <parser/parser.h>
-#include <parser/rule_registry.h>
 
 #include <semantic/semantic.h>
 
@@ -28,8 +27,6 @@ int main(int argc, const char ** argv) {
     free_list_init(&free_list);
 
     options_parse_cli(argc, argv);
-
-    rule_registry_init();
 
     if (options.input_path == NULL) fatal_error("No input path specified\n" USAGE_STRING, argv[0]);
 

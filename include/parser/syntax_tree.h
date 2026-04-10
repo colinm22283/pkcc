@@ -3,10 +3,18 @@
 #include <stddef.h>
 
 #include <scanner/token_buffer.h>
+#include <scanner/token_number.h>
 
-#include <parser/rule.h>
+#include <parser/nonterminals.h>
+
+#include <line_buffer.h>
 
 struct syntax_tree_node_list_node_s;
+
+typedef enum {
+    STNT_NONTERMINAL,
+    STNT_TERMINAL,
+} syntax_tree_node_type_t;
 
 typedef struct syntax_tree_node_s {
     struct syntax_tree_node_list_node_s * head;
@@ -14,7 +22,7 @@ typedef struct syntax_tree_node_s {
 } syntax_tree_node_t;
 
 typedef struct syntax_tree_node_list_node_s {
-    rule_token_type_t token_type;
+    syntax_tree_node_type_t token_type;
 
     union {
         struct {
@@ -45,8 +53,6 @@ typedef struct {
 void syntax_tree_init(syntax_tree_t * syntax_tree, line_buffer_t * line_buffer, token_buffer_t * token_buffer);
 void syntax_tree_free(syntax_tree_t * syntax_tree);
 
-void syntax_tree_parse(syntax_tree_t * syntax_tree);
-
 void syntax_tree_print(syntax_tree_t * syntax_tree);
 
 void syntax_tree_node_init(syntax_tree_node_t * node);
@@ -54,3 +60,4 @@ void syntax_tree_node_free(syntax_tree_node_t * node);
 void syntax_tree_node_clear(syntax_tree_node_t * node);
 
 void syntax_tree_node_list_link_back(syntax_tree_node_t * node, syntax_tree_node_list_node_t * list_node);
+syntax_tree_node_list_node_t * syntax_tree_node_list_unlink_back(syntax_tree_node_t * node);

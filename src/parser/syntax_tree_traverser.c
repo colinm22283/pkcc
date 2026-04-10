@@ -21,7 +21,7 @@ bool syntax_tree_traverser_next(syntax_tree_traverser_t * stt) {
 bool syntax_tree_traverser_enter(syntax_tree_traverser_t * stt, syntax_tree_traverser_t * new_stt) {
     if (stt->current_node == stt->head_node->tail) return false;
 
-    if (stt->current_node->token_type != RT_NONTERMINAL) return false;
+    if (stt->current_node->token_type != STNT_NONTERMINAL) return false;
 
     syntax_tree_traverser_init(new_stt, &stt->current_node->nonterminal.tree);
 
@@ -31,7 +31,7 @@ bool syntax_tree_traverser_enter(syntax_tree_traverser_t * stt, syntax_tree_trav
 bool syntax_tree_traverser_enter_self(syntax_tree_traverser_t * stt) {
     if (stt->current_node == stt->head_node->tail) return false;
 
-    if (stt->current_node->token_type != RT_NONTERMINAL) return false;
+    if (stt->current_node->token_type != STNT_NONTERMINAL) return false;
 
     syntax_tree_node_t * new_node = &stt->current_node->nonterminal.tree;
 
@@ -44,7 +44,7 @@ bool syntax_tree_traverser_seek_terminal(syntax_tree_traverser_t * stt, token_nu
     syntax_tree_node_list_node_t * original_node = stt->current_node;
 
     while (stt->current_node != stt->head_node->tail) {
-        if (stt->current_node->token_type == RT_TERMINAL) {
+        if (stt->current_node->token_type == STNT_TERMINAL) {
             if (stt->current_node->terminal.terminal == token_number) {
                 return true;
             }
@@ -61,7 +61,7 @@ bool syntax_tree_traverser_seek_nonterminal(syntax_tree_traverser_t * stt, nonte
     syntax_tree_node_list_node_t * original_node = stt->current_node;
 
     while (stt->current_node != stt->head_node->tail) {
-        if (stt->current_node->token_type == RT_NONTERMINAL) {
+        if (stt->current_node->token_type == STNT_NONTERMINAL) {
             if (stt->current_node->nonterminal.nonterminal == nonterminal) {
                 return true;
             }

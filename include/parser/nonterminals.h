@@ -2,7 +2,7 @@
 
 #include <stdbool.h>
 
-#include <parser/rule.h>
+typedef size_t nonterminal_t;
 
 enum {
     NT_PRIMARY_EXPRESSION,
@@ -122,6 +122,8 @@ static inline const char * rules_nonterminal_name(nonterminal_t nonterminal) {
     switch (nonterminal) {
         case NT_TRANSLATION_UNIT: return "NT_TRANSLATION_UNIT";
 
+        case NT_TYPE_SPECIFIER: return "NT_TYPE_SPECIFIER";
+
         default: return "UNKNOWN";
     }
 }
@@ -129,6 +131,8 @@ static inline const char * rules_nonterminal_name(nonterminal_t nonterminal) {
 static inline const char * rules_nonterminal_report_name(nonterminal_t nonterminal) {
     switch (nonterminal) {
         case NT_TRANSLATION_UNIT: return "translation unit";
+
+        case NT_TYPE_SPECIFIER: return "type specifier";
 
         default: return "UNKNOWN";
     }

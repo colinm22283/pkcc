@@ -1,4 +1,5 @@
 #include <parser/parser.h>
+#include <parser/parser_rules.h>
 
 #include <debug/log.h>
 
@@ -21,5 +22,5 @@ void parser_free(parser_t * parser) {
 void parser_run(parser_t * parser) {
     parse_graph_load(&parser->parse_graph);
 
-    syntax_tree_parse(&parser->syntax_tree);
+    parser_rules_match(&parser->syntax_tree);
 }
